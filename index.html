@@ -1892,6 +1892,15 @@
           this.fireStepStrength = 0;
           this.fireStepDir = 1;
           this.fireStepPhase = 0;
+          this.lastNightTurn = 0;
+          this.reachT = 99;
+          this.reachDuration = 6.2;
+          this.reachPointerDown = null;
+          this.reachRaycaster = new THREE.Raycaster();
+          this.reachPointer = new THREE.Vector2();
+          this.onReachPointerDown = this.onReachPointerDown.bind(this);
+          this.onReachPointerUp = this.onReachPointerUp.bind(this);
+          this.onReachPointerCancel = this.onReachPointerCancel.bind(this);
           var houseCosLat = Math.cos(this.data.latitude);
           this.houseNormal = new THREE.Vector3(
             Math.sin(this.data.longitude) * houseCosLat,
@@ -1907,8 +1916,109 @@
             Math.cos(signLon) * signCosLat
           ).normalize();
         },
+        play: function () {
+          var canvas = this.el.sceneEl && this.el.sceneEl.canvas;
+          if (!canvas) return;
+          canvas.addEventListener("pointerdown", this.onReachPointerDown);
+          window.addEventListener("pointerup", this.onReachPointerUp);
+          window.addEventListener("pointercancel", this.onReachPointerCancel);
+          this.reachCanvas = canvas;
+        },
+        pause: function () {
+          if (this.reachCanvas) {
+            this.reachCanvas.removeEventListener("pointerdown", this.onReachPointerDown);
+            this.reachCanvas = null;
+          }
+          window.removeEventListener("pointerup", this.onReachPointerUp);
+          window.removeEventListener("pointercancel", this.onReachPointerCancel);
+          this.reachPointerDown = null;
+        },
+        onReachPointerDown: function (event) {
+          if (event.button !== undefined && event.button !== 0) return;
+          this.reachPointerDown = {
+            id: event.pointerId,
+            x: event.clientX,
+            y: event.clientY,
+            time: performance.now()
+          };
+        },
+        onReachPointerUp: function (event) {
+          var down = this.reachPointerDown;
+          if (!down || event.pointerId !== down.id) return;
+          this.reachPointerDown = null;
+          var dx = event.clientX - down.x;
+          var dy = event.clientY - down.y;
+          var moved = Math.sqrt(dx * dx + dy * dy);
+          if (moved > 10 || performance.now() - down.time > 520) return;
+          if (!this.isReachGestureAllowed()) return;
+          if (this.isPointerOnCharacter(event)) this.triggerReach();
+        },
+        onReachPointerCancel: function (event) {
+          if (this.reachPointerDown && this.reachPointerDown.id === event.pointerId) {
+            this.reachPointerDown = null;
+          }
+        },
+        isReachGestureAllowed: function () {
+          if (this.mode !== "hold") return false;
+          if (this.lastNightTurn > 0.12 && !this.fireHeadReturnToCamera(this.fireT)) {
+            return false;
+          }
+          return true;
+        },
+        isPointerOnCharacter: function (event) {
+          var scene = this.el.sceneEl;
+          var canvas = scene && scene.canvas;
+          var camera = scene && scene.camera;
+          if (!canvas || !camera) return false;
+          var rect = canvas.getBoundingClientRect();
+          if (!rect.width || !rect.height) return false;
+          this.reachPointer.set(
+            ((event.clientX - rect.left) / rect.width) * 2 - 1,
+            -((event.clientY - rect.top) / rect.height) * 2 + 1
+          );
+          this.reachRaycaster.setFromCamera(this.reachPointer, camera);
+          this.el.object3D.updateMatrixWorld(true);
+          return this.reachRaycaster.intersectObject(this.el.object3D, true).length > 0;
+        },
+        triggerReach: function () {
+          if (this.reachT < this.reachDuration) return;
+          this.reachT = 0;
+        },
+        reachEnvelope: function () {
+          if (this.reachT >= this.reachDuration) return 0;
+          var u = THREE.MathUtils.clamp(this.reachT / this.reachDuration, 0, 1);
+          if (u < 0.32) return this.ease01(u / 0.32);
+          if (u < 0.54) return 1;
+          return 1 - this.ease01((u - 0.54) / 0.46);
+        },
+        applyArmPose: function (arm, side, baseRotX, baseRotY, baseRotZ, reachAmount) {
+          var wiggle = Math.sin(this.reachT * 2.3 + side * 0.35) * 0.8;
+          var targetRotX = 140 + wiggle;
+          var targetRotY = side * 10;
+          var targetRotZ = -side * 2;
+          var x = THREE.MathUtils.lerp(baseRotX, targetRotX, reachAmount);
+          var y = THREE.MathUtils.lerp(baseRotY, targetRotY, reachAmount);
+          var z = THREE.MathUtils.lerp(baseRotZ, targetRotZ, reachAmount);
+          arm.object3D.rotation.set(
+            THREE.MathUtils.degToRad(x),
+            THREE.MathUtils.degToRad(y),
+            THREE.MathUtils.degToRad(z)
+          );
+          var baseX = side * 0.16;
+          var baseY = 0.43;
+          arm.object3D.position.set(baseX, baseY, 0);
+          if (reachAmount > 0.001) {
+            this.tmp.set(0, 0.222, 0).applyEuler(arm.object3D.rotation);
+            arm.object3D.position.set(
+              baseX - this.tmp.x * reachAmount,
+              baseY + 0.222 * reachAmount - this.tmp.y * reachAmount,
+              -this.tmp.z * reachAmount
+            );
+          }
+        },
         tick: function (_, deltaMs) {
           var dt = Math.min((deltaMs || 16) / 1000, 0.055);
+          if (this.reachT < this.reachDuration) this.reachT += dt;
           if (!this.defaultCameraReady) this.updateDefaultCameraVisitPoint();
           if (this.mode === "circle") this.angle += this.data.speed * dt;
           var shouldStartVisit = this.mode === "circle" && this.angle >= this.nextVisitAngle;
@@ -1919,6 +2029,7 @@
           var normal = circleNow;
           var nextNormal = circleNext;
           var nightTurn = THREE.MathUtils.smoothstep(NIGHT_MODE_AMOUNT, 0.18, 0.58);
+          this.lastNightTurn = nightTurn;
           var fireActiveNow = nightTurn > 0.04;
           if (fireActiveNow) {
             this.fireT = this.fireActive ? this.fireT + dt : 0;
@@ -2163,8 +2274,9 @@
           }
           if (leftLeg) leftLeg.setAttribute("rotation", swing + " 0 0");
           if (rightLeg) rightLeg.setAttribute("rotation", (-swing) + " 0 0");
-          if (leftArm) leftArm.setAttribute("rotation", (-swing * 0.8) + " 0 10");
-          if (rightArm) rightArm.setAttribute("rotation", (swing * 0.8) + " 0 -10");
+          var reachAmount = this.reachEnvelope();
+          if (leftArm) this.applyArmPose(leftArm, -1, -swing * 0.8, 0, 10, reachAmount);
+          if (rightArm) this.applyArmPose(rightArm, 1, swing * 0.8, 0, -10, reachAmount);
           if (head) {
             var lookAmount = 0;
             if (this.mode === "toVisit") {
