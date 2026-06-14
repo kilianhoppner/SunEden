@@ -120,10 +120,18 @@
         }
       }
 
-      .live-cam-time {
+      .live-cam-control-group {
         position: absolute;
         top: calc(clamp(32px, 4.55vmin, 53px) + 2px);
-        right: clamp(180px, 11.8vw, 228px);
+        right: clamp(125px, 10vw, 190px);
+        display: flex;
+        align-items: stretch;
+        gap: clamp(8px, 0.74vmin, 13px);
+        pointer-events: none;
+      }
+
+      .live-cam-time {
+        position: static;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -138,9 +146,73 @@
         white-space: nowrap;
       }
 
+      .live-cam-zoom-controls {
+        position: static;
+        display: flex;
+        gap: clamp(8px, 0.74vmin, 13px);
+        pointer-events: auto;
+      }
+
+      .live-cam-zoom-button {
+        appearance: none;
+        border: 0;
+        border-radius: 0;
+        width: clamp(32px, 3.08vmin, 50px);
+        min-width: clamp(32px, 3.08vmin, 50px);
+        height: clamp(32px, 3.08vmin, 50px);
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        color: #FFFFFF;
+        background: #949494;
+        font-size: 0;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .live-cam-zoom-button span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+      }
+
+      .live-cam-zoom-button::before,
+      .live-cam-zoom-button.live-cam-zoom-in::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        background: #FFFFFF;
+        transform: translate(-50%, -50%);
+      }
+
+      .live-cam-zoom-button::before {
+        width: 54%;
+        height: 11%;
+      }
+
+      .live-cam-zoom-button.live-cam-zoom-in::after {
+        width: 11%;
+        height: 54%;
+      }
+
       @media (max-width: 760px) {
+        .live-cam-control-group {
+          top: calc(clamp(32px, 4.55vmin, 53px) + 2px + clamp(10px, 1.4vmin, 20px));
+          right: auto;
+          left: 50%;
+          display: flex;
+          height: auto;
+          gap: clamp(7px, 0.67vmin, 11px);
+          transform: translateX(-50%);
+        }
+
         .live-cam-status {
-          top: calc(clamp(32px, 4.55vmin, 53px) + clamp(29px, 2.78vmin, 45px) + clamp(9px, 1.08vmin, 14px) + clamp(10px, 1.4vmin, 20px));
+          top: calc(clamp(32px, 4.55vmin, 53px) + clamp(10px, 1.4vmin, 20px) + clamp(29px, 2.78vmin, 45px) + clamp(9px, 1.08vmin, 14px));
           gap: clamp(11px, 1.22vmin, 17px);
           font-size: clamp(32px, 3.13vmin, 54px);
         }
@@ -151,14 +223,22 @@
         }
 
         .live-cam-time {
-          top: calc(clamp(32px, 4.55vmin, 53px) + 2px + clamp(10px, 1.4vmin, 20px));
-          right: auto;
-          bottom: auto;
-          left: 50%;
+          position: static;
           min-height: clamp(29px, 2.78vmin, 45px);
           padding: 0 clamp(4px, 0.34vmin, 6px);
           font-size: clamp(28px, 2.78vmin, 50px);
-          transform: translateX(-50%);
+          transform: none;
+        }
+
+        .live-cam-zoom-controls {
+          position: static;
+          gap: clamp(7px, 0.67vmin, 11px);
+        }
+
+        .live-cam-zoom-button {
+          width: clamp(29px, 2.78vmin, 45px);
+          min-width: clamp(29px, 2.78vmin, 45px);
+          height: clamp(29px, 2.78vmin, 45px);
         }
 
         .live-cam-corner {
@@ -1333,6 +1413,11 @@
           window.removeEventListener("pointercancel", this.onPointerUp);
         },
         onPointerDown: function (event) {
+          if (this.isPointerOnZoomControl(event)) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
           this.dragging = true;
           this.returning = false;
           this.lastInteractionTime = performance.now();
@@ -1360,6 +1445,23 @@
           this.lastInteractionTime = performance.now();
           this.applyRotation();
           event.preventDefault();
+        },
+        isPointerOnZoomControl: function (event) {
+          var scene = this.el.sceneEl;
+          if (!scene || !scene.is || !scene.is("vr-mode")) return false;
+          var buttons = document.querySelectorAll(".live-cam-zoom-button");
+          for (var i = 0; i < buttons.length; i++) {
+            var rect = buttons[i].getBoundingClientRect();
+            if (
+              event.clientX >= rect.left &&
+              event.clientX <= rect.right &&
+              event.clientY >= rect.top &&
+              event.clientY <= rect.bottom
+            ) {
+              return true;
+            }
+          }
+          return false;
         },
         onPointerUp: function (event) {
           this.dragging = false;
@@ -1432,6 +1534,133 @@
           this.nextQuat.premultiply(this.qYaw);
           this.nextQuat.premultiply(this.qPitch);
           this.el.object3D.quaternion.copy(this.nextQuat);
+        }
+      });
+
+      AFRAME.registerComponent("live-cam-zoom", {
+        schema: {
+          minFov: { type: "number", default: 54 },
+          maxFov: { type: "number", default: 86 },
+          step: { type: "number", default: 8 },
+          speed: { type: "number", default: 9 },
+          returnIdleMs: { type: "number", default: 60000 },
+          returnSpeed: { type: "number", default: 6 }
+        },
+        init: function () {
+          var camera = this.el.getAttribute("camera") || {};
+          this.defaultFov = camera.fov || 70;
+          this.currentFov = this.defaultFov;
+          this.targetFov = this.currentFov;
+          this.zoomDirection = 0;
+          this.lastZoomInteractionTime = performance.now();
+          this.onZoomIn = this.startZoom.bind(this, -1);
+          this.onZoomOut = this.startZoom.bind(this, 1);
+          this.onZoomStop = this.stopZoom.bind(this);
+          this.onFullscreenPointerDown = this.onFullscreenPointerDown.bind(this);
+          this.onControlPointer = function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+          };
+        },
+        play: function () {
+          this.plusButton = document.getElementById("liveCamZoomIn");
+          this.minusButton = document.getElementById("liveCamZoomOut");
+          this.bindButton(this.plusButton, this.onZoomIn);
+          this.bindButton(this.minusButton, this.onZoomOut);
+          window.addEventListener("pointerdown", this.onFullscreenPointerDown, true);
+          window.addEventListener("pointerup", this.onZoomStop, true);
+          window.addEventListener("pointercancel", this.onZoomStop, true);
+        },
+        pause: function () {
+          this.unbindButton(this.plusButton, this.onZoomIn);
+          this.unbindButton(this.minusButton, this.onZoomOut);
+          window.removeEventListener("pointerdown", this.onFullscreenPointerDown, true);
+          window.removeEventListener("pointerup", this.onZoomStop, true);
+          window.removeEventListener("pointercancel", this.onZoomStop, true);
+        },
+        bindButton: function (button, handler) {
+          if (!button) return;
+          button.addEventListener("pointerdown", handler);
+          button.addEventListener("pointerup", this.onZoomStop);
+          button.addEventListener("pointercancel", this.onZoomStop);
+        },
+        unbindButton: function (button, handler) {
+          if (!button) return;
+          button.removeEventListener("pointerdown", handler);
+          button.removeEventListener("pointerup", this.onZoomStop);
+          button.removeEventListener("pointercancel", this.onZoomStop);
+        },
+        buttonContainsPointer: function (button, event) {
+          if (!button) return false;
+          var rect = button.getBoundingClientRect();
+          return (
+            event.clientX >= rect.left &&
+            event.clientX <= rect.right &&
+            event.clientY >= rect.top &&
+            event.clientY <= rect.bottom
+          );
+        },
+        onFullscreenPointerDown: function (event) {
+          var scene = this.el.sceneEl;
+          if (!scene || !scene.is || !scene.is("vr-mode")) return;
+          if (this.buttonContainsPointer(this.plusButton, event)) {
+            this.startZoom(-1, event);
+          } else if (this.buttonContainsPointer(this.minusButton, event)) {
+            this.startZoom(1, event);
+          }
+        },
+        startZoom: function (direction, event) {
+          if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          this.zoomDirection = direction;
+          this.lastZoomInteractionTime = performance.now();
+        },
+        stopZoom: function () {
+          if (this.zoomDirection) this.lastZoomInteractionTime = performance.now();
+          this.zoomDirection = 0;
+        },
+        applyFov: function () {
+          var cameraComponent = this.el.components && this.el.components.camera;
+          if (cameraComponent && cameraComponent.camera) {
+            cameraComponent.camera.fov = this.currentFov;
+            cameraComponent.camera.updateProjectionMatrix();
+          }
+          this.el.setAttribute("camera", "fov", this.currentFov);
+          var hud = document.getElementById("liveCamVrHud");
+          if (hud && hud.components && hud.components["live-cam-vr-hud"]) {
+            hud.components["live-cam-vr-hud"].updateLayout(true);
+          }
+        },
+        tick: function (_, deltaMs) {
+          var dt = Math.min((deltaMs || 16) / 1000, 0.06);
+          var nextFov = this.currentFov;
+          if (this.zoomDirection) {
+            nextFov = THREE.MathUtils.clamp(
+              this.currentFov + this.zoomDirection * this.data.speed * dt,
+              this.data.minFov,
+              this.data.maxFov
+            );
+          } else if (
+            Math.abs(this.currentFov - this.defaultFov) > 0.01 &&
+            performance.now() - this.lastZoomInteractionTime >= this.data.returnIdleMs
+          ) {
+            var returnDirection = this.defaultFov > this.currentFov ? 1 : -1;
+            nextFov = this.currentFov + returnDirection * this.data.returnSpeed * dt;
+            if (
+              (returnDirection > 0 && nextFov > this.defaultFov) ||
+              (returnDirection < 0 && nextFov < this.defaultFov)
+            ) {
+              nextFov = this.defaultFov;
+            }
+          } else {
+            return;
+          }
+          if (Math.abs(nextFov - this.currentFov) < 0.001) return;
+          this.currentFov = nextFov;
+          this.targetFov = nextFov;
+          this.applyFov();
         }
       });
 
@@ -2296,7 +2525,24 @@
             }
             var headYawTarget = walkHeadYaw * (1 - lookAmount) + gazeHeadYaw * lookAmount;
             var headPitchTarget = gazeHeadPitch * lookAmount;
-            var headBlend = 1 - Math.exp(-(this.mode === "toCircle" ? 4.6 : 1.35) * dt);
+            var reachFocus = 0;
+            if (this.reachT < this.reachDuration) {
+              var reachU = THREE.MathUtils.clamp(this.reachT / this.reachDuration, 0, 1);
+              if (reachU < 0.16) {
+                reachFocus = this.ease01(reachU / 0.16);
+              } else if (reachU > 0.88) {
+                reachFocus = 1 - this.ease01((reachU - 0.88) / 0.12);
+              } else {
+                reachFocus = 1;
+              }
+            }
+            headYawTarget = THREE.MathUtils.lerp(headYawTarget, 0, reachFocus);
+            headPitchTarget = THREE.MathUtils.lerp(headPitchTarget, 32, reachFocus);
+            var headBlend =
+              1 -
+              Math.exp(
+                -(this.mode === "toCircle" ? 4.6 : 1.35 + reachFocus * 2.2) * dt
+              );
             this.headYawCurrent += (headYawTarget - this.headYawCurrent) * headBlend;
             this.headPitchCurrent += (headPitchTarget - this.headPitchCurrent) * headBlend;
             head.setAttribute("rotation", this.headPitchCurrent + " " + this.headYawCurrent + " 0");
@@ -2346,16 +2592,19 @@
             }
           }
 
-          var basePitch = 32 + Math.sin(time * 0.31) * 0.55;
+          var basePitch =
+            32 +
+            Math.sin(time * 0.31) * 0.55 +
+            Math.sin(time * 0.097 + 2.4) * 0.35;
           var baseYaw =
-            Math.sin(time * 0.23) * 0.7 +
-            Math.sin(time * 0.071 + 1.8) * 0.45;
-          var cycle = 47;
+            Math.sin(time * 0.23) * 0.85 +
+            Math.sin(time * 0.071 + 1.8) * 0.55 +
+            Math.sin(time * 0.137 + 4.1) * 0.42;
+          var cycle = 39;
           var t = time % cycle;
           var glances = [
-            { start: 9.4, dur: 3.1, pitch: 16, yaw: -13 },
-            { start: 23.8, dur: 4.4, pitch: 20, yaw: 10 },
-            { start: 38.6, dur: 2.7, pitch: 13, yaw: 16 }
+            { start: 3.0, dur: 4.1, pitch: 32.0, yaw: 8.0 },
+            { start: 10.2, dur: 5.0, pitch: 16, yaw: -13 }
           ];
           var pitch = basePitch;
           var yaw = baseYaw;
@@ -2363,15 +2612,15 @@
             var g = glances[i];
             if (t >= g.start && t <= g.start + g.dur) {
               var u = (t - g.start) / g.dur;
-              var bell = Math.pow(Math.sin(Math.PI * u), 1.18);
+              var bell = Math.pow(Math.sin(Math.PI * u), 1.32);
               pitch = THREE.MathUtils.lerp(basePitch, g.pitch, bell);
               yaw = THREE.MathUtils.lerp(baseYaw, g.yaw, bell);
               break;
             }
           }
           return {
-            pitch: pitch + Math.sin(time * 0.83) * 0.45,
-            yaw: yaw + Math.sin(time * 0.49 + 2.1) * 0.55
+            pitch: pitch + Math.sin(time * 0.83) * 0.38,
+            yaw: yaw + Math.sin(time * 0.49 + 2.1) * 0.46
           };
         },
         fireHouseMoveAmount: function (time, fireAmount) {
@@ -7621,6 +7870,7 @@
           this.depth = 1.65;
           this.lastLayoutWidth = 0;
           this.lastLayoutHeight = 0;
+          this.lastFov = 0;
           this.lastSecond = -1;
           this.el.object3D.position.set(0, 0, -this.depth);
 
@@ -7641,6 +7891,11 @@
           this.el.appendChild(this.liveText);
 
           this.timeBox = this.makePlane("#949494");
+          this.zoomPlusBox = this.makePlane("#949494");
+          this.zoomMinusBox = this.makePlane("#949494");
+          this.zoomPlusHorizontal = this.makePlane("#FFFFFF");
+          this.zoomPlusVertical = this.makePlane("#FFFFFF");
+          this.zoomMinusHorizontal = this.makePlane("#FFFFFF");
           this.timeText = document.createElement("a-entity");
           this.timeText.setAttribute(
             "troika-text",
@@ -7717,26 +7972,40 @@
             y: (screenH / 2 - y) / screenH * viewH
           };
         },
+        layoutZoomHudButton: function (button, box, horizontalBar, verticalBar, viewW, viewH, width, height) {
+          if (!button || !box || !horizontalBar) return;
+          var rect = button.getBoundingClientRect();
+          var hud = this.cssRectToHud(rect, viewW, viewH, width, height);
+          this.setPlane(box, hud.x, hud.y, hud.w, hud.h);
+          this.setPlane(horizontalBar, hud.x, hud.y, hud.w * 0.54, hud.h * 0.11);
+          if (verticalBar) this.setPlane(verticalBar, hud.x, hud.y, hud.w * 0.11, hud.h * 0.54);
+        },
         updateLayout: function (force) {
           var width = window.innerWidth || 16;
           var height = window.innerHeight || 9;
-          if (
-            !force &&
-            Math.abs(width - this.lastLayoutWidth) < 1 &&
-            Math.abs(height - this.lastLayoutHeight) < 1
-          )
-            return;
-          this.lastLayoutWidth = width;
-          this.lastLayoutHeight = height;
-
           var aspect = width / Math.max(1, height);
           var fov = 70;
           var cameraEl = this.el.parentElement;
           if (cameraEl && cameraEl.getAttribute("camera")) {
             fov = cameraEl.getAttribute("camera").fov || fov;
           }
-          var viewH = 2 * Math.tan(THREE.MathUtils.degToRad(fov / 2)) * this.depth;
+          if (
+            !force &&
+            Math.abs(width - this.lastLayoutWidth) < 1 &&
+            Math.abs(height - this.lastLayoutHeight) < 1 &&
+            Math.abs(fov - this.lastFov) < 0.01
+          )
+            return;
+          this.lastLayoutWidth = width;
+          this.lastLayoutHeight = height;
+          this.lastFov = fov;
+          var baseFov = 70;
+          var viewH = 2 * Math.tan(THREE.MathUtils.degToRad(baseFov / 2)) * this.depth;
           var viewW = viewH * aspect;
+          var fovScale =
+            Math.tan(THREE.MathUtils.degToRad(fov / 2)) /
+            Math.tan(THREE.MathUtils.degToRad(baseFov / 2));
+          this.el.object3D.scale.set(fovScale, fovScale, 1);
           var cssCorners = [
             document.querySelector(".live-cam-corner.top-left"),
             document.querySelector(".live-cam-corner.top-right"),
@@ -7747,6 +8016,7 @@
           var cssLiveText = document.querySelector(".live-cam-status span:last-child");
           var cssStatus = document.querySelector(".live-cam-status");
           var cssTime = document.querySelector(".live-cam-time");
+          var cssZoomButtons = document.querySelectorAll(".live-cam-zoom-button");
           if (cssCorners[0] && cssCorners[1] && cssCorners[2] && cssCorners[3] && cssDot && cssLiveText && cssStatus && cssTime) {
             var cornerIndex = 0;
             for (var ci = 0; ci < cssCorners.length; ci++) {
@@ -7827,6 +8097,8 @@
                 this.timeFontSize +
                 "; value: --/--/----  --:--:--; font: ./ChicagoKare-Regular.otf; color: #FFFFFF; anchor: center; baseline: middle"
             );
+            this.layoutZoomHudButton(cssZoomButtons[0], this.zoomPlusBox, this.zoomPlusHorizontal, this.zoomPlusVertical, viewW, viewH, width, height);
+            this.layoutZoomHudButton(cssZoomButtons[1], this.zoomMinusBox, this.zoomMinusHorizontal, null, viewW, viewH, width, height);
             return;
           }
 
@@ -7876,6 +8148,15 @@
               timeSize +
               "; value: --/--/----  --:--:--; font: ./ChicagoKare-Regular.otf; color: #FFFFFF; anchor: center; baseline: middle"
           );
+          var zoomSize = boxH;
+          var zoomGap = zoomSize * 0.34;
+          var plusX = timeX + boxW / 2 + zoomGap + zoomSize / 2;
+          var minusX = plusX + zoomSize + zoomGap;
+          this.setPlane(this.zoomPlusBox, plusX, statusY, zoomSize, zoomSize);
+          this.setPlane(this.zoomMinusBox, minusX, statusY, zoomSize, zoomSize);
+          this.setPlane(this.zoomPlusHorizontal, plusX, statusY, zoomSize * 0.54, zoomSize * 0.11);
+          this.setPlane(this.zoomPlusVertical, plusX, statusY, zoomSize * 0.11, zoomSize * 0.54);
+          this.setPlane(this.zoomMinusHorizontal, minusX, statusY, zoomSize * 0.54, zoomSize * 0.11);
         },
         tick: function () {
           this.updateLayout(false);
@@ -8134,7 +8415,8 @@
         position="-2.35 1.75 -4.5"
         rotation="49.5 -4 12"
         camera="active: true; fov: 70; near: 0.01; far: 1000"
-        curved-world-drag-look>
+        curved-world-drag-look
+        live-cam-zoom>
         <a-entity id="liveCamVrHud" visible="false" live-cam-vr-hud></a-entity>
       </a-entity>
 
@@ -8147,7 +8429,13 @@
           <span class="live-cam-dot"></span>
           <span>live cam</span>
         </div>
-        <div id="liveCamTime" class="live-cam-time">--/--/---- --:--:--</div>
+        <div class="live-cam-control-group" aria-hidden="false">
+          <div id="liveCamTime" class="live-cam-time">--/--/---- --:--:--</div>
+          <div class="live-cam-zoom-controls">
+            <button id="liveCamZoomIn" class="live-cam-zoom-button live-cam-zoom-in" type="button" aria-label="Zoom in"><span>+</span></button>
+            <button id="liveCamZoomOut" class="live-cam-zoom-button live-cam-zoom-out" type="button" aria-label="Zoom out"><span>-</span></button>
+          </div>
+        </div>
       </div>
     </a-scene>
 
