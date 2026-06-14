@@ -126,7 +126,7 @@
         right: clamp(125px, 10vw, 190px);
         display: flex;
         align-items: stretch;
-        gap: clamp(8px, 0.74vmin, 13px);
+        gap: clamp(28px, 1.95vmin, 36px);
         pointer-events: none;
       }
 
@@ -203,12 +203,12 @@
       @media (max-width: 760px) {
         .live-cam-control-group {
           top: calc(clamp(32px, 4.55vmin, 53px) + 2px + clamp(10px, 1.4vmin, 20px));
-          right: auto;
-          left: 50%;
-          display: flex;
-          height: auto;
-          gap: clamp(7px, 0.67vmin, 11px);
-          transform: translateX(-50%);
+          right: 0;
+          left: 0;
+          display: block;
+          height: clamp(29px, 2.78vmin, 45px);
+          gap: 0;
+          transform: none;
         }
 
         .live-cam-status {
@@ -223,16 +223,17 @@
         }
 
         .live-cam-time {
-          position: static;
+          position: absolute;
+          left: 50%;
+          top: 0;
           min-height: clamp(29px, 2.78vmin, 45px);
           padding: 0 clamp(4px, 0.34vmin, 6px);
           font-size: clamp(28px, 2.78vmin, 50px);
-          transform: none;
+          transform: translateX(-50%);
         }
 
         .live-cam-zoom-controls {
-          position: static;
-          gap: clamp(7px, 0.67vmin, 11px);
+          display: none;
         }
 
         .live-cam-zoom-button {
@@ -1557,6 +1558,13 @@
           this.onZoomOut = this.startZoom.bind(this, 1);
           this.onZoomStop = this.stopZoom.bind(this);
           this.onFullscreenPointerDown = this.onFullscreenPointerDown.bind(this);
+          this.onTouchStart = this.onTouchStart.bind(this);
+          this.onTouchMove = this.onTouchMove.bind(this);
+          this.onTouchEnd = this.onTouchEnd.bind(this);
+          this.pinching = false;
+          this.pinchStartDistance = 0;
+          this.pinchStartFov = this.currentFov;
+          this.pinchTargetFov = this.currentFov;
           this.onControlPointer = function (event) {
             event.preventDefault();
             event.stopPropagation();
@@ -1570,6 +1578,14 @@
           window.addEventListener("pointerdown", this.onFullscreenPointerDown, true);
           window.addEventListener("pointerup", this.onZoomStop, true);
           window.addEventListener("pointercancel", this.onZoomStop, true);
+          var canvas = this.el.sceneEl && this.el.sceneEl.canvas;
+          if (canvas) {
+            canvas.addEventListener("touchstart", this.onTouchStart, { passive: false });
+            canvas.addEventListener("touchmove", this.onTouchMove, { passive: false });
+            canvas.addEventListener("touchend", this.onTouchEnd, { passive: false });
+            canvas.addEventListener("touchcancel", this.onTouchEnd, { passive: false });
+            this.touchCanvas = canvas;
+          }
         },
         pause: function () {
           this.unbindButton(this.plusButton, this.onZoomIn);
@@ -1577,6 +1593,13 @@
           window.removeEventListener("pointerdown", this.onFullscreenPointerDown, true);
           window.removeEventListener("pointerup", this.onZoomStop, true);
           window.removeEventListener("pointercancel", this.onZoomStop, true);
+          if (this.touchCanvas) {
+            this.touchCanvas.removeEventListener("touchstart", this.onTouchStart);
+            this.touchCanvas.removeEventListener("touchmove", this.onTouchMove);
+            this.touchCanvas.removeEventListener("touchend", this.onTouchEnd);
+            this.touchCanvas.removeEventListener("touchcancel", this.onTouchEnd);
+            this.touchCanvas = null;
+          }
         },
         bindButton: function (button, handler) {
           if (!button) return;
@@ -1591,7 +1614,7 @@
           button.removeEventListener("pointercancel", this.onZoomStop);
         },
         buttonContainsPointer: function (button, event) {
-          if (!button) return false;
+          if (!button || window.getComputedStyle(button).display === "none") return false;
           var rect = button.getBoundingClientRect();
           return (
             event.clientX >= rect.left &&
@@ -1608,6 +1631,51 @@
           } else if (this.buttonContainsPointer(this.minusButton, event)) {
             this.startZoom(1, event);
           }
+        },
+        isMobileZoomLayout: function () {
+          return window.matchMedia && window.matchMedia("(max-width: 760px)").matches;
+        },
+        touchDistance: function (touches) {
+          var dx = touches[0].clientX - touches[1].clientX;
+          var dy = touches[0].clientY - touches[1].clientY;
+          return Math.sqrt(dx * dx + dy * dy);
+        },
+        onTouchStart: function (event) {
+          if (!this.isMobileZoomLayout() || event.touches.length !== 2) return;
+          this.pinching = true;
+          this.zoomDirection = 0;
+          var dragLook = this.el.components && this.el.components["curved-world-drag-look"];
+          if (dragLook) dragLook.dragging = false;
+          this.pinchStartDistance = Math.max(1, this.touchDistance(event.touches));
+          this.pinchStartFov = this.currentFov;
+          this.pinchTargetFov = this.currentFov;
+          this.lastZoomInteractionTime = performance.now();
+          event.preventDefault();
+          event.stopPropagation();
+        },
+        onTouchMove: function (event) {
+          if (!this.pinching || event.touches.length !== 2) return;
+          var distance = this.touchDistance(event.touches);
+          var delta = distance - this.pinchStartDistance;
+          this.pinchTargetFov = THREE.MathUtils.clamp(
+            this.pinchStartFov + delta * 0.12,
+            this.data.minFov,
+            this.data.maxFov
+          );
+          this.lastZoomInteractionTime = performance.now();
+          event.preventDefault();
+          event.stopPropagation();
+        },
+        onTouchEnd: function (event) {
+          if (!this.pinching) return;
+          if (event.touches && event.touches.length >= 2) {
+            this.pinchStartDistance = Math.max(1, this.touchDistance(event.touches));
+            this.pinchStartFov = this.currentFov;
+            this.pinchTargetFov = this.currentFov;
+            return;
+          }
+          this.pinching = false;
+          this.lastZoomInteractionTime = performance.now();
         },
         startZoom: function (direction, event) {
           if (event) {
@@ -1642,6 +1710,12 @@
               this.data.minFov,
               this.data.maxFov
             );
+          } else if (this.pinching) {
+            var maxStep = this.data.speed * 2.4 * dt;
+            var diff = this.pinchTargetFov - this.currentFov;
+            nextFov = Math.abs(diff) <= maxStep
+              ? this.pinchTargetFov
+              : this.currentFov + Math.sign(diff) * maxStep;
           } else if (
             Math.abs(this.currentFov - this.defaultFov) > 0.01 &&
             performance.now() - this.lastZoomInteractionTime >= this.data.returnIdleMs
@@ -7974,6 +8048,11 @@
         },
         layoutZoomHudButton: function (button, box, horizontalBar, verticalBar, viewW, viewH, width, height) {
           if (!button || !box || !horizontalBar) return;
+          var visible = window.getComputedStyle(button).display !== "none";
+          box.setAttribute("visible", visible);
+          horizontalBar.setAttribute("visible", visible);
+          if (verticalBar) verticalBar.setAttribute("visible", visible);
+          if (!visible) return;
           var rect = button.getBoundingClientRect();
           var hud = this.cssRectToHud(rect, viewW, viewH, width, height);
           this.setPlane(box, hud.x, hud.y, hud.w, hud.h);
