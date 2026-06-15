@@ -1658,7 +1658,7 @@
           var distance = this.touchDistance(event.touches);
           var delta = distance - this.pinchStartDistance;
           this.pinchTargetFov = THREE.MathUtils.clamp(
-            this.pinchStartFov + delta * 0.12,
+            this.pinchStartFov - delta * 0.12,
             this.data.minFov,
             this.data.maxFov
           );
