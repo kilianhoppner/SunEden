@@ -86,11 +86,11 @@
         left: 50%;
         display: flex;
         align-items: center;
-        gap: clamp(12px, 1.36vmin, 19px);
+        gap: clamp(11px, 1.29vmin, 18px);
         transform: translateX(-50%);
         color: #111111;
         font-family: "ABCDiatypeRoundedEdu", Arial, sans-serif;
-        font-size: clamp(35px, 3.48vmin, 60px);
+        font-size: clamp(33px, 3.3vmin, 57px);
         line-height: 1;
         letter-spacing: 0;
         white-space: nowrap;
@@ -101,8 +101,8 @@
       }
 
       .live-cam-dot {
-        width: clamp(33px, 3vmin, 54px);
-        height: clamp(33px, 3vmin, 54px);
+        width: clamp(31px, 2.84vmin, 51px);
+        height: clamp(31px, 2.84vmin, 51px);
         border-radius: 50%;
         background: #FF1010;
         animation: liveCamBlink 1.15s steps(2, start) infinite;
@@ -135,12 +135,12 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: clamp(32px, 3.08vmin, 50px);
-        padding: 0 clamp(5px, 0.38vmin, 7px);
+        min-height: clamp(30px, 2.92vmin, 48px);
+        padding: 0 clamp(4px, 0.35vmin, 6px);
         color: #FFFFFF;
         background: #949494;
         font-family: "ChicagoKare", "Courier New", monospace;
-        font-size: clamp(31px, 3.08vmin, 55px);
+        font-size: clamp(29px, 2.92vmin, 52px);
         line-height: 1;
         letter-spacing: 1px;
         white-space: nowrap;
@@ -149,7 +149,7 @@
       .live-cam-zoom-controls {
         position: static;
         display: flex;
-        gap: clamp(8px, 0.74vmin, 13px);
+        gap: clamp(7px, 0.7vmin, 12px);
         pointer-events: auto;
       }
 
@@ -157,9 +157,9 @@
         appearance: none;
         border: 0;
         border-radius: 0;
-        width: clamp(32px, 3.08vmin, 50px);
-        min-width: clamp(32px, 3.08vmin, 50px);
-        height: clamp(32px, 3.08vmin, 50px);
+        width: clamp(30px, 2.92vmin, 48px);
+        min-width: clamp(30px, 2.92vmin, 48px);
+        height: clamp(30px, 2.92vmin, 48px);
         padding: 0;
         display: flex;
         align-items: center;
@@ -206,29 +206,29 @@
           right: 0;
           left: 0;
           display: block;
-          height: clamp(29px, 2.78vmin, 45px);
+          height: clamp(28px, 2.64vmin, 43px);
           gap: 0;
           transform: none;
         }
 
         .live-cam-status {
-          top: calc(clamp(32px, 4.55vmin, 53px) + clamp(10px, 1.4vmin, 20px) + clamp(29px, 2.78vmin, 45px) + clamp(9px, 1.08vmin, 14px));
-          gap: clamp(11px, 1.22vmin, 17px);
-          font-size: clamp(32px, 3.13vmin, 54px);
+          top: calc(clamp(32px, 4.55vmin, 53px) + clamp(10px, 1.4vmin, 20px) + clamp(28px, 2.64vmin, 43px) + clamp(9px, 1.08vmin, 14px));
+          gap: clamp(10px, 1.16vmin, 16px);
+          font-size: clamp(30px, 2.96vmin, 51px);
         }
 
         .live-cam-dot {
-          width: clamp(30px, 2.7vmin, 49px);
-          height: clamp(30px, 2.7vmin, 49px);
+          width: clamp(29px, 2.56vmin, 46px);
+          height: clamp(29px, 2.56vmin, 46px);
         }
 
         .live-cam-time {
           position: absolute;
           left: 50%;
           top: 0;
-          min-height: clamp(29px, 2.78vmin, 45px);
+          min-height: clamp(28px, 2.64vmin, 43px);
           padding: 0 clamp(4px, 0.34vmin, 6px);
-          font-size: clamp(28px, 2.78vmin, 50px);
+          font-size: clamp(27px, 2.64vmin, 48px);
           transform: translateX(-50%);
         }
 
@@ -237,9 +237,9 @@
         }
 
         .live-cam-zoom-button {
-          width: clamp(29px, 2.78vmin, 45px);
-          min-width: clamp(29px, 2.78vmin, 45px);
-          height: clamp(29px, 2.78vmin, 45px);
+          width: clamp(28px, 2.64vmin, 43px);
+          min-width: clamp(28px, 2.64vmin, 43px);
+          height: clamp(28px, 2.64vmin, 43px);
         }
 
         .live-cam-corner {
@@ -1540,8 +1540,8 @@
 
       AFRAME.registerComponent("live-cam-zoom", {
         schema: {
-          minFov: { type: "number", default: 54 },
-          maxFov: { type: "number", default: 86 },
+          minFov: { type: "number", default: 50 },
+          maxFov: { type: "number", default: 90 },
           step: { type: "number", default: 8 },
           speed: { type: "number", default: 9 },
           returnIdleMs: { type: "number", default: 60000 },
