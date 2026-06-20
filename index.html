@@ -86,23 +86,23 @@
         left: 50%;
         display: flex;
         align-items: center;
-        gap: clamp(11px, 1.29vmin, 18px);
+        gap: clamp(10.5px, 1.23vmin, 17px);
         transform: translateX(-50%);
         color: #111111;
         font-family: "ABCDiatypeRoundedEdu", Arial, sans-serif;
-        font-size: clamp(33px, 3.3vmin, 57px);
+        font-size: clamp(32px, 3.18vmin, 55px);
         line-height: 1;
         letter-spacing: 0;
         white-space: nowrap;
       }
 
       .live-cam-status span:last-child {
-        transform: translateY(0.075em);
+        transform: translateY(calc(0.075em - 1px));
       }
 
       .live-cam-dot {
-        width: clamp(31px, 2.84vmin, 51px);
-        height: clamp(31px, 2.84vmin, 51px);
+        width: clamp(30px, 2.73vmin, 49px);
+        height: clamp(30px, 2.73vmin, 49px);
         border-radius: 50%;
         background: #FF1010;
         animation: liveCamBlink 1.15s steps(2, start) infinite;
@@ -123,10 +123,9 @@
       .live-cam-control-group {
         position: absolute;
         top: calc(clamp(32px, 4.55vmin, 53px) + 2px);
-        right: clamp(125px, 10vw, 190px);
-        display: flex;
-        align-items: stretch;
-        gap: clamp(28px, 1.95vmin, 36px);
+        right: clamp(118px, 9.45vw, 180px);
+        display: block;
+        width: max-content;
         pointer-events: none;
       }
 
@@ -135,69 +134,15 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: clamp(30px, 2.92vmin, 48px);
+        min-height: clamp(29px, 2.8vmin, 46px);
         padding: 0 clamp(4px, 0.35vmin, 6px);
         color: #FFFFFF;
         background: #949494;
         font-family: "ChicagoKare", "Courier New", monospace;
-        font-size: clamp(29px, 2.92vmin, 52px);
+        font-size: clamp(28px, 2.8vmin, 50px);
         line-height: 1;
         letter-spacing: 1px;
         white-space: nowrap;
-      }
-
-      .live-cam-zoom-controls {
-        position: static;
-        display: flex;
-        gap: clamp(7px, 0.7vmin, 12px);
-        pointer-events: auto;
-      }
-
-      .live-cam-zoom-button {
-        appearance: none;
-        border: 0;
-        border-radius: 0;
-        width: clamp(30px, 2.92vmin, 48px);
-        min-width: clamp(30px, 2.92vmin, 48px);
-        height: clamp(30px, 2.92vmin, 48px);
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        color: #FFFFFF;
-        background: #949494;
-        font-size: 0;
-        line-height: 1;
-        cursor: pointer;
-      }
-
-      .live-cam-zoom-button span {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
-      }
-
-      .live-cam-zoom-button::before,
-      .live-cam-zoom-button.live-cam-zoom-in::after {
-        content: "";
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        background: #FFFFFF;
-        transform: translate(-50%, -50%);
-      }
-
-      .live-cam-zoom-button::before {
-        width: 54%;
-        height: 11%;
-      }
-
-      .live-cam-zoom-button.live-cam-zoom-in::after {
-        width: 11%;
-        height: 54%;
       }
 
       @media (max-width: 760px) {
@@ -206,40 +151,31 @@
           right: 0;
           left: 0;
           display: block;
-          height: clamp(28px, 2.64vmin, 43px);
+          width: auto;
+          height: clamp(27px, 2.54vmin, 42px);
           gap: 0;
           transform: none;
         }
 
         .live-cam-status {
-          top: calc(clamp(32px, 4.55vmin, 53px) + clamp(10px, 1.4vmin, 20px) + clamp(28px, 2.64vmin, 43px) + clamp(9px, 1.08vmin, 14px));
-          gap: clamp(10px, 1.16vmin, 16px);
-          font-size: clamp(30px, 2.96vmin, 51px);
+          top: calc(clamp(32px, 4.55vmin, 53px) + clamp(10px, 1.4vmin, 20px) + clamp(27px, 2.54vmin, 42px) + clamp(9px, 1.08vmin, 14px));
+          gap: clamp(9.5px, 1.1vmin, 15px);
+          font-size: clamp(29px, 2.84vmin, 49px);
         }
 
         .live-cam-dot {
-          width: clamp(29px, 2.56vmin, 46px);
-          height: clamp(29px, 2.56vmin, 46px);
+          width: clamp(28px, 2.46vmin, 44px);
+          height: clamp(28px, 2.46vmin, 44px);
         }
 
         .live-cam-time {
           position: absolute;
           left: 50%;
           top: 0;
-          min-height: clamp(28px, 2.64vmin, 43px);
+          min-height: clamp(27px, 2.54vmin, 42px);
           padding: 0 clamp(4px, 0.34vmin, 6px);
-          font-size: clamp(27px, 2.64vmin, 48px);
+          font-size: clamp(26px, 2.54vmin, 46px);
           transform: translateX(-50%);
-        }
-
-        .live-cam-zoom-controls {
-          display: none;
-        }
-
-        .live-cam-zoom-button {
-          width: clamp(28px, 2.64vmin, 43px);
-          min-width: clamp(28px, 2.64vmin, 43px);
-          height: clamp(28px, 2.64vmin, 43px);
         }
 
         .live-cam-corner {
@@ -1414,11 +1350,6 @@
           window.removeEventListener("pointercancel", this.onPointerUp);
         },
         onPointerDown: function (event) {
-          if (this.isPointerOnZoomControl(event)) {
-            event.preventDefault();
-            event.stopPropagation();
-            return;
-          }
           this.dragging = true;
           this.returning = false;
           this.lastInteractionTime = performance.now();
@@ -1446,23 +1377,6 @@
           this.lastInteractionTime = performance.now();
           this.applyRotation();
           event.preventDefault();
-        },
-        isPointerOnZoomControl: function (event) {
-          var scene = this.el.sceneEl;
-          if (!scene || !scene.is || !scene.is("vr-mode")) return false;
-          var buttons = document.querySelectorAll(".live-cam-zoom-button");
-          for (var i = 0; i < buttons.length; i++) {
-            var rect = buttons[i].getBoundingClientRect();
-            if (
-              event.clientX >= rect.left &&
-              event.clientX <= rect.right &&
-              event.clientY >= rect.top &&
-              event.clientY <= rect.bottom
-            ) {
-              return true;
-            }
-          }
-          return false;
         },
         onPointerUp: function (event) {
           this.dragging = false;
@@ -1537,204 +1451,511 @@
           this.el.object3D.quaternion.copy(this.nextQuat);
         }
       });
-
-      AFRAME.registerComponent("live-cam-zoom", {
+      AFRAME.registerComponent("exhibition-audio", {
         schema: {
-          minFov: { type: "number", default: 50 },
-          maxFov: { type: "number", default: 90 },
-          step: { type: "number", default: 8 },
-          speed: { type: "number", default: 9 },
-          returnIdleMs: { type: "number", default: 60000 },
-          returnSpeed: { type: "number", default: 6 }
+          riverVolume: { type: "number", default: 0.22 },
+          chickenVolume: { type: "number", default: 0.14 },
+          chickenFireBoost: { type: "number", default: 0.12 },
+          fireIntroVolume: { type: "number", default: 0.48 },
+          fireBedVolume: { type: "number", default: 0.52 },
+          fireBedDelay: { type: "number", default: 2.4 },
+          helicopterVolume: { type: "number", default: 0.88 },
+          footstepVolume: { type: "number", default: 0.24 },
+          turnSoundVolume: { type: "number", default: 0.052 },
+          breathingVolume: { type: "number", default: 0.052 },
+          swooshVolume: { type: "number", default: 0.09 },
+          fadeSpeed: { type: "number", default: 1.55 }
         },
         init: function () {
-          var camera = this.el.getAttribute("camera") || {};
-          this.defaultFov = camera.fov || 70;
-          this.currentFov = this.defaultFov;
-          this.targetFov = this.currentFov;
-          this.zoomDirection = 0;
-          this.lastZoomInteractionTime = performance.now();
-          this.onZoomIn = this.startZoom.bind(this, -1);
-          this.onZoomOut = this.startZoom.bind(this, 1);
-          this.onZoomStop = this.stopZoom.bind(this);
-          this.onFullscreenPointerDown = this.onFullscreenPointerDown.bind(this);
-          this.onTouchStart = this.onTouchStart.bind(this);
-          this.onTouchMove = this.onTouchMove.bind(this);
-          this.onTouchEnd = this.onTouchEnd.bind(this);
-          this.pinching = false;
-          this.pinchStartDistance = 0;
-          this.pinchStartFov = this.currentFov;
-          this.pinchTargetFov = this.currentFov;
-          this.onControlPointer = function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-          };
-        },
-        play: function () {
-          this.plusButton = document.getElementById("liveCamZoomIn");
-          this.minusButton = document.getElementById("liveCamZoomOut");
-          this.bindButton(this.plusButton, this.onZoomIn);
-          this.bindButton(this.minusButton, this.onZoomOut);
-          window.addEventListener("pointerdown", this.onFullscreenPointerDown, true);
-          window.addEventListener("pointerup", this.onZoomStop, true);
-          window.addEventListener("pointercancel", this.onZoomStop, true);
-          var canvas = this.el.sceneEl && this.el.sceneEl.canvas;
-          if (canvas) {
-            canvas.addEventListener("touchstart", this.onTouchStart, { passive: false });
-            canvas.addEventListener("touchmove", this.onTouchMove, { passive: false });
-            canvas.addEventListener("touchend", this.onTouchEnd, { passive: false });
-            canvas.addEventListener("touchcancel", this.onTouchEnd, { passive: false });
-            this.touchCanvas = canvas;
-          }
+          this.river = new Audio("audio/river.wav");
+          this.chicken = new Audio("audio/chicken.wav");
+          this.helicopter = new Audio("audio/helicopter.wav");
+          this.breathing = new Audio("audio/breathing.wav");
+          this.river.loop = true;
+          this.chicken.loop = true;
+          this.helicopter.loop = true;
+          this.breathing.loop = true;
+          this.river.preload = "auto";
+          this.chicken.preload = "auto";
+          this.helicopter.preload = "auto";
+          this.breathing.preload = "auto";
+          this.river.volume = this.data.riverVolume;
+          this.chicken.volume = this.data.chickenVolume;
+          this.helicopter.volume = 0;
+          this.breathing.volume = 1;
+          this.fireActive = false;
+          this.fireTime = 0;
+          this.fireIntroStarted = false;
+          this.fireBedStarted = false;
+          this.fireIntroCurrent = 0;
+          this.fireBedCurrent = 0;
+          this.heliCurrent = 0;
+          this.swooshCurrent = 0;
+          this.lastNightAmount = NIGHT_MODE_AMOUNT;
+          this.mediaUnlocked = false;
+          this.fireBuffersLoading = false;
+          this.fireIntroBuffer = null;
+          this.fireBedBuffer = null;
+          this.fireIntroSource = null;
+          this.fireBedSource = null;
+          this.fireIntroGain = null;
+          this.fireBedGain = null;
+          this.lastStepBucket = null;
+          this.lastStepTime = 0;
+          this.lastTurnSoundTime = 0;
+          this.hasLastHumanQuat = false;
+          this.lastHumanQuat = new THREE.Quaternion();
+          this.audioContext = null;
+          this.heliSource = null;
+          this.heliPanner = null;
+          this.breathSource = null;
+          this.breathPanner = null;
+          this.breathGain = null;
+          this.swooshSource = null;
+          this.swooshGain = null;
+          this.swooshFilter = null;
+          this.swooshPanner = null;
+          this.tmpPos = new THREE.Vector3();
+          this.tmpCam = new THREE.Vector3();
+          this.tmpForward = new THREE.Vector3();
+          this.tmpUp = new THREE.Vector3();
+          this.tmpQuat = new THREE.Quaternion();
+          this.tryStart = this.tryStart.bind(this);
+          window.addEventListener("pointerdown", this.tryStart, { once: true });
+          window.addEventListener("touchstart", this.tryStart, { once: true });
+          window.addEventListener("keydown", this.tryStart, { once: true });
         },
         pause: function () {
-          this.unbindButton(this.plusButton, this.onZoomIn);
-          this.unbindButton(this.minusButton, this.onZoomOut);
-          window.removeEventListener("pointerdown", this.onFullscreenPointerDown, true);
-          window.removeEventListener("pointerup", this.onZoomStop, true);
-          window.removeEventListener("pointercancel", this.onZoomStop, true);
-          if (this.touchCanvas) {
-            this.touchCanvas.removeEventListener("touchstart", this.onTouchStart);
-            this.touchCanvas.removeEventListener("touchmove", this.onTouchMove);
-            this.touchCanvas.removeEventListener("touchend", this.onTouchEnd);
-            this.touchCanvas.removeEventListener("touchcancel", this.onTouchEnd);
-            this.touchCanvas = null;
+          this.pauseAudio(this.river);
+          this.pauseAudio(this.chicken);
+          this.pauseAudio(this.helicopter);
+          this.pauseAudio(this.breathing);
+          this.stopSource(this.fireIntroSource);
+          this.stopSource(this.fireBedSource);
+        },
+        remove: function () {
+          window.removeEventListener("pointerdown", this.tryStart);
+          window.removeEventListener("touchstart", this.tryStart);
+          window.removeEventListener("keydown", this.tryStart);
+          this.pause();
+          if (this.audioContext && this.audioContext.close) this.audioContext.close();
+        },
+        ensureAudioContext: function () {
+          if (!this.audioContext) {
+            var Ctx = window.AudioContext || window.webkitAudioContext;
+            if (!Ctx) return null;
+            this.audioContext = new Ctx();
+          }
+          if (this.audioContext.state === "suspended") {
+            this.audioContext.resume().catch(function () {});
+          }
+          if (!this.fireIntroGain) {
+            this.fireIntroGain = this.audioContext.createGain();
+            this.fireBedGain = this.audioContext.createGain();
+            this.fireIntroGain.gain.value = 0;
+            this.fireBedGain.gain.value = 0;
+            this.fireIntroGain.connect(this.audioContext.destination);
+            this.fireBedGain.connect(this.audioContext.destination);
+          }
+          this.loadFireBuffers();
+          if (!this.heliPanner && this.helicopter) {
+            this.heliSource = this.audioContext.createMediaElementSource(this.helicopter);
+            this.heliPanner = this.audioContext.createPanner();
+            this.heliPanner.panningModel = "HRTF";
+            this.heliPanner.distanceModel = "exponential";
+            this.heliPanner.refDistance = 5;
+            this.heliPanner.maxDistance = 75;
+            this.heliPanner.rolloffFactor = 1.45;
+            this.heliPanner.coneInnerAngle = 360;
+            this.heliPanner.coneOuterAngle = 360;
+            this.heliSource.connect(this.heliPanner).connect(this.audioContext.destination);
+          }
+          if (!this.breathPanner && this.breathing) {
+            this.breathSource = this.audioContext.createMediaElementSource(this.breathing);
+            this.breathPanner = this.audioContext.createPanner();
+            this.breathGain = this.audioContext.createGain();
+            this.breathPanner.panningModel = "HRTF";
+            this.breathPanner.distanceModel = "inverse";
+            this.breathPanner.refDistance = 1.9;
+            this.breathPanner.maxDistance = 18;
+            this.breathPanner.rolloffFactor = 1.25;
+            this.breathGain.gain.value = 0;
+            this.breathSource.connect(this.breathGain).connect(this.breathPanner).connect(this.audioContext.destination);
+          }
+          if (!this.swooshSource) {
+            var length = Math.max(1, Math.floor(this.audioContext.sampleRate * 2));
+            var buffer = this.audioContext.createBuffer(1, length, this.audioContext.sampleRate);
+            var data = buffer.getChannelData(0);
+            for (var i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
+            this.swooshSource = this.audioContext.createBufferSource();
+            this.swooshSource.buffer = buffer;
+            this.swooshSource.loop = true;
+            this.swooshFilter = this.audioContext.createBiquadFilter();
+            this.swooshFilter.type = "bandpass";
+            this.swooshFilter.frequency.value = 520;
+            this.swooshFilter.Q.value = 0.85;
+            this.swooshGain = this.audioContext.createGain();
+            this.swooshGain.gain.value = 0;
+            this.swooshPanner = this.audioContext.createPanner();
+            this.swooshPanner.panningModel = "HRTF";
+            this.swooshPanner.distanceModel = "linear";
+            this.swooshPanner.refDistance = 1;
+            this.swooshPanner.maxDistance = 80;
+            this.swooshPanner.rolloffFactor = 0.45;
+            this.swooshSource
+              .connect(this.swooshFilter)
+              .connect(this.swooshGain)
+              .connect(this.swooshPanner)
+              .connect(this.audioContext.destination);
+            this.swooshSource.start();
+          }
+          return this.audioContext;
+        },
+        loadFireBuffers: function () {
+          if (!this.audioContext || this.fireBuffersLoading) return;
+          if (this.fireIntroBuffer && this.fireBedBuffer) return;
+          var self = this;
+          this.fireBuffersLoading = true;
+          this.loadBuffer("audio/fire.wav", function (buffer) {
+            self.fireIntroBuffer = buffer;
+            if (self.fireActive && self.fireIntroStarted && !self.fireIntroSource) {
+              self.startBufferSource("intro");
+            }
+          });
+          this.loadBuffer("audio/fire2.wav", function (buffer) {
+            self.fireBedBuffer = buffer;
+            if (self.fireActive && self.fireBedStarted && !self.fireBedSource) {
+              self.startBufferSource("bed");
+            }
+          });
+        },
+        loadBuffer: function (url, done) {
+          var ctx = this.audioContext;
+          fetch(url)
+            .then(function (response) { return response.arrayBuffer(); })
+            .then(function (arrayBuffer) { return ctx.decodeAudioData(arrayBuffer); })
+            .then(done)
+            .catch(function () {});
+        },
+        stopSource: function (source) {
+          if (!source) return;
+          try { source.stop(); } catch (e) {}
+        },
+        startBufferSource: function (kind) {
+          var ctx = this.ensureAudioContext();
+          if (!ctx || ctx.state !== "running") return;
+          var buffer = kind === "intro" ? this.fireIntroBuffer : this.fireBedBuffer;
+          var gain = kind === "intro" ? this.fireIntroGain : this.fireBedGain;
+          if (!buffer || !gain) return;
+          this.stopSource(kind === "intro" ? this.fireIntroSource : this.fireBedSource);
+          var source = ctx.createBufferSource();
+          source.buffer = buffer;
+          source.loop = false;
+          source.connect(gain);
+          if (kind === "intro") {
+            this.fireIntroSource = source;
+            source.onended = function () { source.onended = null; };
+          } else {
+            this.fireBedSource = source;
+            source.onended = function () { source.onended = null; };
+          }
+          source.start();
+        },
+        pauseAudio: function (audio) {
+          if (audio) audio.pause();
+        },
+        playAudio: function (audio) {
+          if (!audio || !audio.paused) return;
+          audio.play().catch(function () {});
+        },
+        tryStart: function () {
+          this.ensureAudioContext();
+          this.playAudio(this.river);
+          this.playAudio(this.chicken);
+          this.playAudio(this.breathing);
+          this.playAudio(this.helicopter);
+          this.mediaUnlocked = true;
+          if (this.fireActive) {
+            if (this.fireIntroStarted && !this.fireIntroSource) this.startBufferSource("intro");
+            if (this.fireBedStarted && !this.fireBedSource) this.startBufferSource("bed");
           }
         },
-        bindButton: function (button, handler) {
-          if (!button) return;
-          button.addEventListener("pointerdown", handler);
-          button.addEventListener("pointerup", this.onZoomStop);
-          button.addEventListener("pointercancel", this.onZoomStop);
+        startFireScene: function () {
+          this.fireActive = true;
+          this.fireTime = 0;
+          this.fireIntroStarted = true;
+          this.fireBedStarted = false;
+          this.fireIntroCurrent = 0;
+          this.fireBedCurrent = 0;
+          this.stopSource(this.fireIntroSource);
+          this.stopSource(this.fireBedSource);
+          this.fireIntroSource = null;
+          this.fireBedSource = null;
+          this.startBufferSource("intro");
         },
-        unbindButton: function (button, handler) {
-          if (!button) return;
-          button.removeEventListener("pointerdown", handler);
-          button.removeEventListener("pointerup", this.onZoomStop);
-          button.removeEventListener("pointercancel", this.onZoomStop);
+        endFireScene: function () {
+          this.fireActive = false;
+          this.fireTime = 0;
+          this.fireIntroStarted = false;
+          this.fireBedStarted = false;
+          this.stopSource(this.fireIntroSource);
+          this.stopSource(this.fireBedSource);
+          this.fireIntroSource = null;
+          this.fireBedSource = null;
         },
-        buttonContainsPointer: function (button, event) {
-          if (!button || window.getComputedStyle(button).display === "none") return false;
-          var rect = button.getBoundingClientRect();
-          return (
-            event.clientX >= rect.left &&
-            event.clientX <= rect.right &&
-            event.clientY >= rect.top &&
-            event.clientY <= rect.bottom
-          );
-        },
-        onFullscreenPointerDown: function (event) {
-          var scene = this.el.sceneEl;
-          if (!scene || !scene.is || !scene.is("vr-mode")) return;
-          if (this.buttonContainsPointer(this.plusButton, event)) {
-            this.startZoom(-1, event);
-          } else if (this.buttonContainsPointer(this.minusButton, event)) {
-            this.startZoom(1, event);
+        setPannerPosition: function (panner, pos) {
+          if (!panner) return;
+          if (panner.positionX) {
+            panner.positionX.value = pos.x;
+            panner.positionY.value = pos.y;
+            panner.positionZ.value = pos.z;
+          } else {
+            panner.setPosition(pos.x, pos.y, pos.z);
           }
         },
-        isMobileZoomLayout: function () {
-          return window.matchMedia && window.matchMedia("(max-width: 760px)").matches;
+        updateListener: function () {
+          if (!this.audioContext || !this.audioContext.listener) return;
+          var cameraEl = this.el.sceneEl && this.el.sceneEl.querySelector("[camera]");
+          if (!cameraEl || !cameraEl.object3D) return;
+          var listener = this.audioContext.listener;
+          cameraEl.object3D.updateMatrixWorld(true);
+          cameraEl.object3D.getWorldPosition(this.tmpCam);
+          this.tmpForward.set(0, 0, -1).applyQuaternion(cameraEl.object3D.quaternion).normalize();
+          this.tmpUp.set(0, 1, 0).applyQuaternion(cameraEl.object3D.quaternion).normalize();
+          if (listener.positionX) {
+            listener.positionX.value = this.tmpCam.x;
+            listener.positionY.value = this.tmpCam.y;
+            listener.positionZ.value = this.tmpCam.z;
+            listener.forwardX.value = this.tmpForward.x;
+            listener.forwardY.value = this.tmpForward.y;
+            listener.forwardZ.value = this.tmpForward.z;
+            listener.upX.value = this.tmpUp.x;
+            listener.upY.value = this.tmpUp.y;
+            listener.upZ.value = this.tmpUp.z;
+          } else {
+            listener.setPosition(this.tmpCam.x, this.tmpCam.y, this.tmpCam.z);
+            listener.setOrientation(
+              this.tmpForward.x,
+              this.tmpForward.y,
+              this.tmpForward.z,
+              this.tmpUp.x,
+              this.tmpUp.y,
+              this.tmpUp.z
+            );
+          }
         },
-        touchDistance: function (touches) {
-          var dx = touches[0].clientX - touches[1].clientX;
-          var dy = touches[0].clientY - touches[1].clientY;
-          return Math.sqrt(dx * dx + dy * dy);
+        playFootstep: function (strength, position) {
+          var ctx = this.ensureAudioContext();
+          if (!ctx || ctx.state !== "running") return;
+          var now = ctx.currentTime;
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          var filter = ctx.createBiquadFilter();
+          var panner = ctx.createPanner();
+          filter.type = "lowpass";
+          filter.frequency.setValueAtTime(260, now);
+          panner.panningModel = "HRTF";
+          panner.distanceModel = "inverse";
+          panner.refDistance = 3.1;
+          panner.maxDistance = 34;
+          panner.rolloffFactor = 1.18;
+          this.setPannerPosition(panner, position);
+          var volume = this.data.footstepVolume * THREE.MathUtils.clamp(strength, 0.38, 1.25);
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(92, now);
+          osc.frequency.exponentialRampToValueAtTime(42, now + 0.12);
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), now + 0.012);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+          var noise = ctx.createBufferSource();
+          var noiseGain = ctx.createGain();
+          var bufferLength = Math.max(1, Math.floor(ctx.sampleRate * 0.075));
+          var buffer = ctx.createBuffer(1, bufferLength, ctx.sampleRate);
+          var data = buffer.getChannelData(0);
+          for (var i = 0; i < bufferLength; i++) {
+            var decay = 1 - i / bufferLength;
+            data[i] = (Math.random() * 2 - 1) * decay * decay;
+          }
+          noise.buffer = buffer;
+          noiseGain.gain.setValueAtTime(0.0001, now);
+          noiseGain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume * 0.42), now + 0.008);
+          noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+          osc.connect(filter).connect(gain).connect(panner).connect(ctx.destination);
+          noise.connect(noiseGain).connect(panner);
+          osc.start(now);
+          noise.start(now);
+          osc.stop(now + 0.2);
+          noise.stop(now + 0.095);
         },
-        onTouchStart: function (event) {
-          if (!this.isMobileZoomLayout() || event.touches.length !== 2) return;
-          this.pinching = true;
-          this.zoomDirection = 0;
-          var dragLook = this.el.components && this.el.components["curved-world-drag-look"];
-          if (dragLook) dragLook.dragging = false;
-          this.pinchStartDistance = Math.max(1, this.touchDistance(event.touches));
-          this.pinchStartFov = this.currentFov;
-          this.pinchTargetFov = this.currentFov;
-          this.lastZoomInteractionTime = performance.now();
-          event.preventDefault();
-          event.stopPropagation();
+        playTurnSound: function (amount, position) {
+          var ctx = this.ensureAudioContext();
+          if (!ctx || ctx.state !== "running") return;
+          var now = ctx.currentTime;
+          var noise = ctx.createBufferSource();
+          var gain = ctx.createGain();
+          var filter = ctx.createBiquadFilter();
+          var panner = ctx.createPanner();
+          var len = Math.max(1, Math.floor(ctx.sampleRate * 0.16));
+          var buffer = ctx.createBuffer(1, len, ctx.sampleRate);
+          var data = buffer.getChannelData(0);
+          for (var i = 0; i < len; i++) {
+            var d = 1 - i / len;
+            data[i] = (Math.random() * 2 - 1) * d * d;
+          }
+          noise.buffer = buffer;
+          filter.type = "bandpass";
+          filter.frequency.setValueAtTime(190, now);
+          filter.frequency.linearRampToValueAtTime(430, now + 0.12);
+          filter.Q.value = 0.8;
+          panner.panningModel = "HRTF";
+          panner.distanceModel = "inverse";
+          panner.refDistance = 2.7;
+          panner.maxDistance = 28;
+          panner.rolloffFactor = 1.1;
+          this.setPannerPosition(panner, position);
+          var volume = this.data.turnSoundVolume * THREE.MathUtils.clamp(amount, 0.25, 1.2);
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), now + 0.025);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+          noise.connect(filter).connect(gain).connect(panner).connect(ctx.destination);
+          noise.start(now);
+          noise.stop(now + 0.19);
         },
-        onTouchMove: function (event) {
-          if (!this.pinching || event.touches.length !== 2) return;
-          var distance = this.touchDistance(event.touches);
-          var delta = distance - this.pinchStartDistance;
-          this.pinchTargetFov = THREE.MathUtils.clamp(
-            this.pinchStartFov - delta * 0.12,
-            this.data.minFov,
-            this.data.maxFov
-          );
-          this.lastZoomInteractionTime = performance.now();
-          event.preventDefault();
-          event.stopPropagation();
+        updateFootsteps: function () {
+          var human = document.getElementById("human");
+          var comp = human && human.components && human.components["human-house-walk"];
+          if (!human || !comp || !human.object3D) return;
+          var phase = comp.mode === "hold" ? comp.fireStepPhase : comp.walkPhase;
+          if (!isFinite(phase)) return;
+          var walk = comp.walkAmountCurrent || 0;
+          var speed = comp.mode === "hold"
+            ? Math.min(1, (comp.fireStepStrength || 0) * 3.4)
+            : Math.min(1, (comp.moveSpeedSm || 0) / 0.9);
+          var strength = walk * Math.max(speed, comp.mode === "hold" ? 0.55 : 0);
+          if (strength < 0.025) {
+            this.lastStepBucket = Math.floor(phase / Math.PI);
+          } else {
+            var bucket = Math.floor(phase / Math.PI);
+            var nowMs = performance.now();
+            if (this.lastStepBucket === null) this.lastStepBucket = bucket;
+            if (bucket !== this.lastStepBucket && nowMs - this.lastStepTime > 150) {
+              human.object3D.updateMatrixWorld(true);
+              human.object3D.getWorldPosition(this.tmpPos);
+              this.playFootstep(strength, this.tmpPos);
+              this.lastStepTime = nowMs;
+            }
+            this.lastStepBucket = bucket;
+          }
+          this.updateTurnSound(human, comp);
         },
-        onTouchEnd: function (event) {
-          if (!this.pinching) return;
-          if (event.touches && event.touches.length >= 2) {
-            this.pinchStartDistance = Math.max(1, this.touchDistance(event.touches));
-            this.pinchStartFov = this.currentFov;
-            this.pinchTargetFov = this.currentFov;
+        updateTurnSound: function (human, comp) {
+          var nowMs = performance.now();
+          human.object3D.getWorldQuaternion(this.tmpQuat);
+          if (!this.hasLastHumanQuat) {
+            this.lastHumanQuat.copy(this.tmpQuat);
+            this.hasLastHumanQuat = true;
             return;
           }
-          this.pinching = false;
-          this.lastZoomInteractionTime = performance.now();
+          var dot = Math.abs(THREE.MathUtils.clamp(this.lastHumanQuat.dot(this.tmpQuat), -1, 1));
+          var angle = 2 * Math.acos(dot);
+          this.lastHumanQuat.copy(this.tmpQuat);
+          var moving = Math.max(comp.walkAmountCurrent || 0, comp.fireStepStrength || 0);
+          if (angle < 0.018 || moving < 0.04 || nowMs - this.lastTurnSoundTime < 420) return;
+          human.object3D.getWorldPosition(this.tmpPos);
+          this.playTurnSound(Math.min(1.15, angle * 14 * moving), this.tmpPos);
+          this.lastTurnSoundTime = nowMs;
         },
-        startZoom: function (direction, event) {
-          if (event) {
-            event.preventDefault();
-            event.stopPropagation();
+        updateHelicopter: function (dt, nightAmount) {
+          var target = THREE.MathUtils.smoothstep(nightAmount, 0.03, 0.32) * this.data.helicopterVolume;
+          this.heliCurrent += (target - this.heliCurrent) * (1 - Math.exp(-1.9 * dt));
+          if (!this.helicopter) return;
+          this.helicopter.volume = Math.max(0, Math.min(1, this.heliCurrent));
+          if (this.heliCurrent > 0.002 || this.mediaUnlocked) {
+            this.playAudio(this.helicopter);
           }
-          this.zoomDirection = direction;
-          this.lastZoomInteractionTime = performance.now();
+          if (!this.heliPanner) return;
+          var heli = document.getElementById("nightHelicopter");
+          if (!heli || !heli.object3D) return;
+          heli.object3D.updateMatrixWorld(true);
+          heli.object3D.getWorldPosition(this.tmpPos);
+          this.setPannerPosition(this.heliPanner, this.tmpPos);
         },
-        stopZoom: function () {
-          if (this.zoomDirection) this.lastZoomInteractionTime = performance.now();
-          this.zoomDirection = 0;
+        updateSwoosh: function (dt, nightAmount) {
+          if (!this.swooshGain || !this.swooshFilter || !this.swooshPanner) {
+            this.lastNightAmount = nightAmount;
+            return;
+          }
+          var velocity = Math.abs(nightAmount - this.lastNightAmount) / Math.max(dt, 0.001);
+          this.lastNightAmount = nightAmount;
+          var transitionAmount = Math.sin(THREE.MathUtils.clamp(nightAmount, 0, 1) * Math.PI);
+          var target = THREE.MathUtils.clamp(velocity * 11, 0, 1) * transitionAmount * this.data.swooshVolume;
+          this.swooshCurrent += (target - this.swooshCurrent) * (1 - Math.exp(-3.2 * dt));
+          var cutoff = 260 + transitionAmount * 880 + velocity * 1200;
+          this.swooshGain.gain.value = this.swooshCurrent;
+          this.swooshFilter.frequency.value = THREE.MathUtils.clamp(cutoff, 220, 1800);
+          this.tmpPos.set(-58, THREE.MathUtils.lerp(8, 148, nightAmount), -58);
+          this.setPannerPosition(this.swooshPanner, this.tmpPos);
         },
-        applyFov: function () {
-          var cameraComponent = this.el.components && this.el.components.camera;
-          if (cameraComponent && cameraComponent.camera) {
-            cameraComponent.camera.fov = this.currentFov;
-            cameraComponent.camera.updateProjectionMatrix();
-          }
-          this.el.setAttribute("camera", "fov", this.currentFov);
-          var hud = document.getElementById("liveCamVrHud");
-          if (hud && hud.components && hud.components["live-cam-vr-hud"]) {
-            hud.components["live-cam-vr-hud"].updateLayout(true);
-          }
+        updateBreathing: function (dt, nightAmount) {
+          if (!this.breathing || !this.breathGain || !this.breathPanner) return;
+          var human = document.getElementById("human");
+          var comp = human && human.components && human.components["human-house-walk"];
+          if (!human || !human.object3D || !comp) return;
+          var hold = comp.mode === "hold" ? 1 : 0;
+          var fireDuck = 1 - THREE.MathUtils.smoothstep(nightAmount, 0.1, 0.82) * 0.38;
+          var breathWave = (Math.sin(comp.modeT * 1.25) + 1) * 0.5;
+          var pulse = 0.45 + Math.pow(breathWave, 1.8) * 0.55;
+          var target = this.data.breathingVolume * hold * fireDuck * pulse;
+          this.breathGain.gain.value +=
+            (target - this.breathGain.gain.value) *
+            (1 - Math.exp(-4.2 * dt));
+          if (target > 0.001) this.playAudio(this.breathing);
+          human.object3D.updateMatrixWorld(true);
+          human.object3D.getWorldPosition(this.tmpPos);
+          this.tmpPos.y += 0.4;
+          this.setPannerPosition(this.breathPanner, this.tmpPos);
         },
         tick: function (_, deltaMs) {
-          var dt = Math.min((deltaMs || 16) / 1000, 0.06);
-          var nextFov = this.currentFov;
-          if (this.zoomDirection) {
-            nextFov = THREE.MathUtils.clamp(
-              this.currentFov + this.zoomDirection * this.data.speed * dt,
-              this.data.minFov,
-              this.data.maxFov
-            );
-          } else if (this.pinching) {
-            var maxStep = this.data.speed * 2.4 * dt;
-            var diff = this.pinchTargetFov - this.currentFov;
-            nextFov = Math.abs(diff) <= maxStep
-              ? this.pinchTargetFov
-              : this.currentFov + Math.sign(diff) * maxStep;
-          } else if (
-            Math.abs(this.currentFov - this.defaultFov) > 0.01 &&
-            performance.now() - this.lastZoomInteractionTime >= this.data.returnIdleMs
-          ) {
-            var returnDirection = this.defaultFov > this.currentFov ? 1 : -1;
-            nextFov = this.currentFov + returnDirection * this.data.returnSpeed * dt;
-            if (
-              (returnDirection > 0 && nextFov > this.defaultFov) ||
-              (returnDirection < 0 && nextFov < this.defaultFov)
-            ) {
-              nextFov = this.defaultFov;
-            }
-          } else {
-            return;
+          var dt = Math.min((deltaMs || 16) / 1000, 0.08);
+          var p = THREE.MathUtils.smoothstep(NIGHT_MODE_AMOUNT, 0.08, 0.55);
+          var sceneOn = p > 0.01;
+          if (sceneOn && !this.fireActive) this.startFireScene();
+          if (this.fireActive) this.fireTime += dt;
+          if (!sceneOn && this.fireActive && p < 0.004) this.endFireScene();
+
+          this.updateListener();
+          if (this.river) this.river.volume = this.data.riverVolume;
+          if (this.chicken) this.chicken.volume = this.data.chickenVolume + p * this.data.chickenFireBoost;
+          this.playAudio(this.river);
+          this.playAudio(this.chicken);
+          this.updateFootsteps();
+          this.updateHelicopter(dt, NIGHT_MODE_AMOUNT);
+          this.updateSwoosh(dt, NIGHT_MODE_AMOUNT);
+          this.updateBreathing(dt, NIGHT_MODE_AMOUNT);
+
+          var introTarget = this.fireActive && this.fireIntroStarted && this.fireIntroSource
+            ? p * this.data.fireIntroVolume
+            : 0;
+          var bedAllowed = this.fireActive && this.fireTime >= this.data.fireBedDelay;
+          if (bedAllowed && !this.fireBedStarted) {
+            this.fireBedStarted = true;
+            this.startBufferSource("bed");
           }
-          if (Math.abs(nextFov - this.currentFov) < 0.001) return;
-          this.currentFov = nextFov;
-          this.targetFov = nextFov;
-          this.applyFov();
+          var bedTarget = bedAllowed && this.fireBedSource ? p * this.data.fireBedVolume : 0;
+
+          this.fireIntroCurrent +=
+            (introTarget - this.fireIntroCurrent) *
+            (1 - Math.exp(-this.data.fadeSpeed * 1.6 * dt));
+          this.fireBedCurrent +=
+            (bedTarget - this.fireBedCurrent) *
+            (1 - Math.exp(-this.data.fadeSpeed * dt));
+
+          if (this.fireIntroGain) {
+            this.fireIntroGain.gain.value = Math.max(0, Math.min(1, this.fireIntroCurrent));
+          }
+          if (this.fireBedGain) {
+            this.fireBedGain.gain.value = Math.max(0, Math.min(1, this.fireBedCurrent));
+          }
         }
       });
 
@@ -7965,11 +8186,6 @@
           this.el.appendChild(this.liveText);
 
           this.timeBox = this.makePlane("#949494");
-          this.zoomPlusBox = this.makePlane("#949494");
-          this.zoomMinusBox = this.makePlane("#949494");
-          this.zoomPlusHorizontal = this.makePlane("#FFFFFF");
-          this.zoomPlusVertical = this.makePlane("#FFFFFF");
-          this.zoomMinusHorizontal = this.makePlane("#FFFFFF");
           this.timeText = document.createElement("a-entity");
           this.timeText.setAttribute(
             "troika-text",
@@ -8046,19 +8262,6 @@
             y: (screenH / 2 - y) / screenH * viewH
           };
         },
-        layoutZoomHudButton: function (button, box, horizontalBar, verticalBar, viewW, viewH, width, height) {
-          if (!button || !box || !horizontalBar) return;
-          var visible = window.getComputedStyle(button).display !== "none";
-          box.setAttribute("visible", visible);
-          horizontalBar.setAttribute("visible", visible);
-          if (verticalBar) verticalBar.setAttribute("visible", visible);
-          if (!visible) return;
-          var rect = button.getBoundingClientRect();
-          var hud = this.cssRectToHud(rect, viewW, viewH, width, height);
-          this.setPlane(box, hud.x, hud.y, hud.w, hud.h);
-          this.setPlane(horizontalBar, hud.x, hud.y, hud.w * 0.54, hud.h * 0.11);
-          if (verticalBar) this.setPlane(verticalBar, hud.x, hud.y, hud.w * 0.11, hud.h * 0.54);
-        },
         updateLayout: function (force) {
           var width = window.innerWidth || 16;
           var height = window.innerHeight || 9;
@@ -8095,7 +8298,6 @@
           var cssLiveText = document.querySelector(".live-cam-status span:last-child");
           var cssStatus = document.querySelector(".live-cam-status");
           var cssTime = document.querySelector(".live-cam-time");
-          var cssZoomButtons = document.querySelectorAll(".live-cam-zoom-button");
           if (cssCorners[0] && cssCorners[1] && cssCorners[2] && cssCorners[3] && cssDot && cssLiveText && cssStatus && cssTime) {
             var cornerIndex = 0;
             for (var ci = 0; ci < cssCorners.length; ci++) {
@@ -8176,8 +8378,6 @@
                 this.timeFontSize +
                 "; value: --/--/----  --:--:--; font: ./ChicagoKare-Regular.otf; color: #FFFFFF; anchor: center; baseline: middle"
             );
-            this.layoutZoomHudButton(cssZoomButtons[0], this.zoomPlusBox, this.zoomPlusHorizontal, this.zoomPlusVertical, viewW, viewH, width, height);
-            this.layoutZoomHudButton(cssZoomButtons[1], this.zoomMinusBox, this.zoomMinusHorizontal, null, viewW, viewH, width, height);
             return;
           }
 
@@ -8227,15 +8427,6 @@
               timeSize +
               "; value: --/--/----  --:--:--; font: ./ChicagoKare-Regular.otf; color: #FFFFFF; anchor: center; baseline: middle"
           );
-          var zoomSize = boxH;
-          var zoomGap = zoomSize * 0.34;
-          var plusX = timeX + boxW / 2 + zoomGap + zoomSize / 2;
-          var minusX = plusX + zoomSize + zoomGap;
-          this.setPlane(this.zoomPlusBox, plusX, statusY, zoomSize, zoomSize);
-          this.setPlane(this.zoomMinusBox, minusX, statusY, zoomSize, zoomSize);
-          this.setPlane(this.zoomPlusHorizontal, plusX, statusY, zoomSize * 0.54, zoomSize * 0.11);
-          this.setPlane(this.zoomPlusVertical, plusX, statusY, zoomSize * 0.11, zoomSize * 0.54);
-          this.setPlane(this.zoomMinusHorizontal, minusX, statusY, zoomSize * 0.54, zoomSize * 0.11);
         },
         tick: function () {
           this.updateLayout(false);
@@ -8254,7 +8445,7 @@
   </head>
 
   <body>
-    <a-scene fog="type: exponential; color: #56B9EF; density: 0.001" dystopian-night-cycle>
+    <a-scene fog="type: exponential; color: #56B9EF; density: 0.001" dystopian-night-cycle exhibition-audio>
       <!-- Sky -->
       <a-sky id="sky" color="#56B9EF"></a-sky>
 
@@ -8341,7 +8532,7 @@
         <a-entity river-mountain-weather></a-entity>
 
         <!-- Night-only helicopter searchlight: uneven patrol, not a perfect circle. -->
-        <a-entity visible="false" night-helicopter-search="radius: 14.2; speed: 0.18; height: 3.4" scale="2.85 2.85 2.85">
+        <a-entity id="nightHelicopter" visible="false" night-helicopter-search="radius: 14.2; speed: 0.18; height: 3.4" scale="2.85 2.85 2.85">
           <a-box position="0 0 0" width="0.68" height="0.2" depth="0.24" color="#1E2528" material="shader: standard; roughness: 0.74; metalness: 0.1"></a-box>
           <a-sphere position="0 0 -0.2" radius="0.17" scale="0.88 0.68 0.66" color="#2C363A" material="shader: standard; roughness: 0.7; metalness: 0.08"></a-sphere>
           <a-box position="0 0 0.58" width="0.1" height="0.065" depth="0.88" color="#182024" material="shader: standard; roughness: 0.76; metalness: 0.1"></a-box>
@@ -8494,8 +8685,7 @@
         position="-2.35 1.75 -4.5"
         rotation="49.5 -4 12"
         camera="active: true; fov: 70; near: 0.01; far: 1000"
-        curved-world-drag-look
-        live-cam-zoom>
+        curved-world-drag-look>
         <a-entity id="liveCamVrHud" visible="false" live-cam-vr-hud></a-entity>
       </a-entity>
 
@@ -8510,10 +8700,6 @@
         </div>
         <div class="live-cam-control-group" aria-hidden="false">
           <div id="liveCamTime" class="live-cam-time">--/--/---- --:--:--</div>
-          <div class="live-cam-zoom-controls">
-            <button id="liveCamZoomIn" class="live-cam-zoom-button live-cam-zoom-in" type="button" aria-label="Zoom in"><span>+</span></button>
-            <button id="liveCamZoomOut" class="live-cam-zoom-button live-cam-zoom-out" type="button" aria-label="Zoom out"><span>-</span></button>
-          </div>
         </div>
       </div>
     </a-scene>
