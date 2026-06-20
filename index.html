@@ -1453,11 +1453,11 @@
       });
       AFRAME.registerComponent("exhibition-audio", {
         schema: {
-          riverVolume: { type: "number", default: 0.22 },
+          riverVolume: { type: "number", default: 0.16 },
           chickenVolume: { type: "number", default: 0.14 },
           chickenFireBoost: { type: "number", default: 0.12 },
-          fireIntroVolume: { type: "number", default: 0.48 },
-          fireBedVolume: { type: "number", default: 0.52 },
+          fireIntroVolume: { type: "number", default: 0.38 },
+          fireBedVolume: { type: "number", default: 0.42 },
           fireBedDelay: { type: "number", default: 2.4 },
           helicopterVolume: { type: "number", default: 0.88 },
           footstepVolume: { type: "number", default: 0.24 },
@@ -1467,19 +1467,16 @@
           fadeSpeed: { type: "number", default: 1.55 }
         },
         init: function () {
-          this.river = new Audio("audio/river.wav");
+          this.river = null;
           this.chicken = new Audio("audio/chicken.wav");
           this.helicopter = new Audio("audio/helicopter.wav");
           this.breathing = new Audio("audio/breathing.wav");
-          this.river.loop = true;
           this.chicken.loop = true;
           this.helicopter.loop = true;
           this.breathing.loop = true;
-          this.river.preload = "auto";
           this.chicken.preload = "auto";
           this.helicopter.preload = "auto";
           this.breathing.preload = "auto";
-          this.river.volume = this.data.riverVolume;
           this.chicken.volume = this.data.chickenVolume;
           this.helicopter.volume = 0;
           this.breathing.volume = 1;
@@ -1500,6 +1497,11 @@
           this.fireBedSource = null;
           this.fireIntroGain = null;
           this.fireBedGain = null;
+          this.riverBuffer = null;
+          this.riverGain = null;
+          this.riverLoop = null;
+          this.riverCurrent = 0;
+          this.fireBedLoop = null;
           this.lastStepBucket = null;
           this.lastStepTime = 0;
           this.lastTurnSoundTime = 0;
@@ -1526,12 +1528,13 @@
           window.addEventListener("keydown", this.tryStart, { once: true });
         },
         pause: function () {
-          this.pauseAudio(this.river);
           this.pauseAudio(this.chicken);
           this.pauseAudio(this.helicopter);
           this.pauseAudio(this.breathing);
           this.stopSource(this.fireIntroSource);
           this.stopSource(this.fireBedSource);
+          this.stopSeamlessLoop(this.fireBedLoop);
+          this.stopSeamlessLoop(this.riverLoop);
         },
         remove: function () {
           window.removeEventListener("pointerdown", this.tryStart);
@@ -1556,8 +1559,11 @@
             this.fireBedGain.gain.value = 0;
             this.fireIntroGain.connect(this.audioContext.destination);
             this.fireBedGain.connect(this.audioContext.destination);
+            this.riverGain = this.audioContext.createGain();
+            this.riverGain.gain.value = 0;
+            this.riverGain.connect(this.audioContext.destination);
           }
-          this.loadFireBuffers();
+          this.loadAudioBuffers();
           if (!this.heliPanner && this.helicopter) {
             this.heliSource = this.audioContext.createMediaElementSource(this.helicopter);
             this.heliPanner = this.audioContext.createPanner();
@@ -1592,7 +1598,7 @@
             this.swooshSource.loop = true;
             this.swooshFilter = this.audioContext.createBiquadFilter();
             this.swooshFilter.type = "bandpass";
-            this.swooshFilter.frequency.value = 520;
+            this.swooshFilter.frequency.value = 760;
             this.swooshFilter.Q.value = 0.85;
             this.swooshGain = this.audioContext.createGain();
             this.swooshGain.gain.value = 0;
@@ -1611,11 +1617,15 @@
           }
           return this.audioContext;
         },
-        loadFireBuffers: function () {
+        loadAudioBuffers: function () {
           if (!this.audioContext || this.fireBuffersLoading) return;
-          if (this.fireIntroBuffer && this.fireBedBuffer) return;
+          if (this.fireIntroBuffer && this.fireBedBuffer && this.riverBuffer) return;
           var self = this;
           this.fireBuffersLoading = true;
+          this.loadBuffer("audio/river.wav", function (buffer) {
+            self.riverBuffer = buffer;
+            if (self.mediaUnlocked && !self.riverLoop) self.startSeamlessLoop("river");
+          });
           this.loadBuffer("audio/fire.wav", function (buffer) {
             self.fireIntroBuffer = buffer;
             if (self.fireActive && self.fireIntroStarted && !self.fireIntroSource) {
@@ -1624,8 +1634,8 @@
           });
           this.loadBuffer("audio/fire2.wav", function (buffer) {
             self.fireBedBuffer = buffer;
-            if (self.fireActive && self.fireBedStarted && !self.fireBedSource) {
-              self.startBufferSource("bed");
+            if (self.fireActive && self.fireBedStarted && !self.fireBedLoop) {
+              self.startSeamlessLoop("bed");
             }
           });
         },
@@ -1640,6 +1650,69 @@
         stopSource: function (source) {
           if (!source) return;
           try { source.stop(); } catch (e) {}
+        },
+        makeSeamlessLoop: function (buffer, outputGain, fadeTime) {
+          return {
+            buffer: buffer,
+            outputGain: outputGain,
+            fadeTime: Math.max(0.08, Math.min(fadeTime || 1.15, buffer.duration * 0.28)),
+            segmentTime: Math.max(0.25, buffer.duration - Math.max(0.08, Math.min(fadeTime || 1.15, buffer.duration * 0.28))),
+            nextStart: 0,
+            sources: []
+          };
+        },
+        scheduleLoopSource: function (loop, when) {
+          var ctx = this.audioContext;
+          if (!ctx || !loop || !loop.buffer || !loop.outputGain) return;
+          var source = ctx.createBufferSource();
+          var gain = ctx.createGain();
+          var fade = loop.fadeTime;
+          var duration = loop.buffer.duration;
+          source.buffer = loop.buffer;
+          gain.gain.setValueAtTime(0, when);
+          gain.gain.linearRampToValueAtTime(1, when + fade);
+          gain.gain.setValueAtTime(1, Math.max(when + fade, when + duration - fade));
+          gain.gain.linearRampToValueAtTime(0, when + duration);
+          source.connect(gain).connect(loop.outputGain);
+          source.start(when);
+          source.stop(when + duration + 0.04);
+          loop.sources.push(source);
+          source.onended = function () {
+            var index = loop.sources.indexOf(source);
+            if (index !== -1) loop.sources.splice(index, 1);
+            source.onended = null;
+          };
+        },
+        startSeamlessLoop: function (kind) {
+          var ctx = this.ensureAudioContext();
+          if (!ctx || ctx.state !== "running") return;
+          var buffer = kind === "river" ? this.riverBuffer : this.fireBedBuffer;
+          var outputGain = kind === "river" ? this.riverGain : this.fireBedGain;
+          if (!buffer || !outputGain) return;
+          var loop = this.makeSeamlessLoop(buffer, outputGain, kind === "river" ? 1.45 : 1.65);
+          var startAt = ctx.currentTime + 0.03;
+          loop.nextStart = startAt;
+          this.scheduleLoopSource(loop, loop.nextStart);
+          loop.nextStart += loop.segmentTime;
+          this.scheduleLoopSource(loop, loop.nextStart);
+          loop.nextStart += loop.segmentTime;
+          if (kind === "river") this.riverLoop = loop;
+          else this.fireBedLoop = loop;
+        },
+        updateSeamlessLoop: function (loop) {
+          var ctx = this.audioContext;
+          if (!ctx || !loop) return;
+          while (loop.nextStart < ctx.currentTime + 1.0) {
+            this.scheduleLoopSource(loop, loop.nextStart);
+            loop.nextStart += loop.segmentTime;
+          }
+        },
+        stopSeamlessLoop: function (loop) {
+          if (!loop) return;
+          for (var i = 0; i < loop.sources.length; i++) {
+            this.stopSource(loop.sources[i]);
+          }
+          loop.sources.length = 0;
         },
         startBufferSource: function (kind) {
           var ctx = this.ensureAudioContext();
@@ -1670,14 +1743,14 @@
         },
         tryStart: function () {
           this.ensureAudioContext();
-          this.playAudio(this.river);
           this.playAudio(this.chicken);
           this.playAudio(this.breathing);
           this.playAudio(this.helicopter);
           this.mediaUnlocked = true;
+          if (this.riverBuffer && !this.riverLoop) this.startSeamlessLoop("river");
           if (this.fireActive) {
             if (this.fireIntroStarted && !this.fireIntroSource) this.startBufferSource("intro");
-            if (this.fireBedStarted && !this.fireBedSource) this.startBufferSource("bed");
+            if (this.fireBedStarted && !this.fireBedLoop) this.startSeamlessLoop("bed");
           }
         },
         startFireScene: function () {
@@ -1689,8 +1762,10 @@
           this.fireBedCurrent = 0;
           this.stopSource(this.fireIntroSource);
           this.stopSource(this.fireBedSource);
+          this.stopSeamlessLoop(this.fireBedLoop);
           this.fireIntroSource = null;
           this.fireBedSource = null;
+          this.fireBedLoop = null;
           this.startBufferSource("intro");
         },
         endFireScene: function () {
@@ -1700,8 +1775,10 @@
           this.fireBedStarted = false;
           this.stopSource(this.fireIntroSource);
           this.stopSource(this.fireBedSource);
+          this.stopSeamlessLoop(this.fireBedLoop);
           this.fireIntroSource = null;
           this.fireBedSource = null;
+          this.fireBedLoop = null;
         },
         setPannerPosition: function (panner, pos) {
           if (!panner) return;
@@ -1890,9 +1967,9 @@
           var transitionAmount = Math.sin(THREE.MathUtils.clamp(nightAmount, 0, 1) * Math.PI);
           var target = THREE.MathUtils.clamp(velocity * 11, 0, 1) * transitionAmount * this.data.swooshVolume;
           this.swooshCurrent += (target - this.swooshCurrent) * (1 - Math.exp(-3.2 * dt));
-          var cutoff = 260 + transitionAmount * 880 + velocity * 1200;
+          var cutoff = 420 + transitionAmount * 1320 + velocity * 1500;
           this.swooshGain.gain.value = this.swooshCurrent;
-          this.swooshFilter.frequency.value = THREE.MathUtils.clamp(cutoff, 220, 1800);
+          this.swooshFilter.frequency.value = THREE.MathUtils.clamp(cutoff, 420, 2800);
           this.tmpPos.set(-58, THREE.MathUtils.lerp(8, 148, nightAmount), -58);
           this.setPannerPosition(this.swooshPanner, this.tmpPos);
         },
@@ -1924,9 +2001,16 @@
           if (!sceneOn && this.fireActive && p < 0.004) this.endFireScene();
 
           this.updateListener();
-          if (this.river) this.river.volume = this.data.riverVolume;
+          if (this.riverGain) {
+            this.riverCurrent +=
+              (this.data.riverVolume - this.riverCurrent) *
+              (1 - Math.exp(-2.4 * dt));
+            this.riverGain.gain.value = this.riverCurrent;
+          }
+          if (this.mediaUnlocked && this.riverBuffer && !this.riverLoop) this.startSeamlessLoop("river");
+          this.updateSeamlessLoop(this.riverLoop);
+          this.updateSeamlessLoop(this.fireBedLoop);
           if (this.chicken) this.chicken.volume = this.data.chickenVolume + p * this.data.chickenFireBoost;
-          this.playAudio(this.river);
           this.playAudio(this.chicken);
           this.updateFootsteps();
           this.updateHelicopter(dt, NIGHT_MODE_AMOUNT);
@@ -1939,9 +2023,9 @@
           var bedAllowed = this.fireActive && this.fireTime >= this.data.fireBedDelay;
           if (bedAllowed && !this.fireBedStarted) {
             this.fireBedStarted = true;
-            this.startBufferSource("bed");
+            this.startSeamlessLoop("bed");
           }
-          var bedTarget = bedAllowed && this.fireBedSource ? p * this.data.fireBedVolume : 0;
+          var bedTarget = bedAllowed && this.fireBedLoop ? p * this.data.fireBedVolume : 0;
 
           this.fireIntroCurrent +=
             (introTarget - this.fireIntroCurrent) *
