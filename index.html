@@ -29,6 +29,14 @@
         font-display: swap;
       }
 
+      @font-face {
+        font-family: "Courgette";
+        src: url("./typefaces/Courgette-Regular.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+
 
       html,
       body {
@@ -141,8 +149,8 @@
         top: calc(clamp(32px, 4.55vmin, 53px) - 3px);
         left: clamp(125px, 10vw, 190px);
         z-index: 2;
-        width: clamp(218px, 16.8vmin, 326px);
-        height: clamp(48px, 4.18vmin, 72px);
+        width: clamp(86px, 6.35vmin, 122px);
+        height: clamp(42px, 3.55vmin, 58px);
         padding: 0;
         border: 0;
         border-radius: 50%;
@@ -153,27 +161,40 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: "ABCDiatypeRoundedEduRegular", "ABCDiatypeRoundedEdu", Arial, sans-serif;
+        font-family: "Courgette", "ABCDiatypeRoundedEduRegular", Arial, sans-serif;
         font-synthesis: none;
         font-weight: 400;
         text-shadow: none;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         -webkit-text-stroke: 0 transparent;
-        font-size: clamp(37px, 3.42vmin, 60px);
+        font-size: clamp(34px, 2.95vmin, 48px);
         line-height: 1;
         letter-spacing: 0;
         pointer-events: auto;
         white-space: nowrap;
         transform: var(--info-base-transform);
-        transform-origin: center center;
+        transform-origin: 50% 50%;
+        transform-box: border-box;
+        will-change: transform;
         transition: transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
       }
 
 
-      .live-cam-information-button:hover,
       .live-cam-information-button.is-hovering {
-        transform: var(--info-base-transform) scale(1.065) rotate(-4deg);
+        transform: var(--info-base-transform) scale(1.32) rotate(-8deg);
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        .live-cam-information-button:hover {
+          transform: var(--info-base-transform) scale(1.32) rotate(-8deg);
+        }
+      }
+
+      @media (hover: none), (pointer: coarse) {
+        .live-cam-information-button:hover {
+          transform: var(--info-base-transform);
+        }
       }
 
       .live-cam-information-button.is-playing:not(:hover):not(.is-hovering) {
@@ -190,32 +211,18 @@
 
       @keyframes infoButtonJiggle {
         0%,
-        100% {
-          transform: var(--info-base-transform);
-        }
-        13% {
-          transform: var(--info-base-transform) rotate(4.2deg);
-        }
-        26% {
-          transform: var(--info-base-transform) rotate(-4.2deg);
-        }
-        39% {
-          transform: var(--info-base-transform) rotate(3.2deg);
-        }
-        52% {
-          transform: var(--info-base-transform) rotate(-2.6deg);
-        }
-        66% {
-          transform: var(--info-base-transform) rotate(1.8deg);
-        }
-        82% {
-          transform: var(--info-base-transform) rotate(-0.9deg);
-        }
+        100% { transform: var(--info-base-transform); }
+        13% { transform: var(--info-base-transform) rotate(4.2deg); }
+        26% { transform: var(--info-base-transform) rotate(-4.2deg); }
+        39% { transform: var(--info-base-transform) rotate(3.2deg); }
+        52% { transform: var(--info-base-transform) rotate(-2.6deg); }
+        66% { transform: var(--info-base-transform) rotate(1.8deg); }
+        82% { transform: var(--info-base-transform) rotate(-0.9deg); }
       }
 
       .live-cam-information-button span {
         display: block;
-        transform: translateY(calc(0.045em - 1px));
+        transform: translateY(calc(0.015em - 1px));
       }
 
       .live-cam-control-group {
@@ -304,9 +311,9 @@
           bottom: calc(clamp(32px, 4.55vmin, 53px) + 2px + clamp(10px, 1.4vmin, 20px));
           left: 50%;
           --info-base-transform: translateX(-50%);
-          width: clamp(178px, 43vw, 268px);
-          height: clamp(42px, 9.6vw, 64px);
-          font-size: clamp(31px, 7.45vw, 45px);
+          width: clamp(76px, 19.2vw, 108px);
+          height: clamp(38px, 9.2vw, 54px);
+          font-size: clamp(31px, 7.25vw, 42px);
         }
 
         .live-cam-control-group {
@@ -7968,7 +7975,7 @@ triggerReach: function () {
           this.infoText = document.createElement("a-entity");
           this.infoText.setAttribute(
             "troika-text",
-            "value: information; font: ./typefaces/ABCDiatypeRoundedEdu-Regular.otf; color: #111111; anchor: center; baseline: middle"
+            "value: i; font: ./typefaces/Courgette-Regular.ttf; color: #111111; anchor: center; baseline: middle"
           );
           this.el.appendChild(this.infoText);
 
@@ -8172,34 +8179,34 @@ triggerReach: function () {
             );
 
             var infoRect = cssInfo.getBoundingClientRect();
-            var infoHud = this.cssRectToHud(infoRect, viewW, viewH, width, height);
-            var infoTextRect = cssInfoText.getBoundingClientRect();
-            var infoTextPoint = this.cssPointToHud(
-              infoTextRect.left + infoTextRect.width / 2,
-              infoTextRect.top + infoTextRect.height / 2,
+            var infoCenter = this.cssPointToHud(
+              infoRect.left + infoRect.width / 2,
+              infoRect.top + infoRect.height / 2,
               viewW,
               viewH,
               width,
               height
             );
             var infoStyle = window.getComputedStyle(cssInfo);
+            var infoCssWidth = parseFloat(infoStyle.width) || infoRect.width;
+            var infoCssHeight = parseFloat(infoStyle.height) || infoRect.height;
             var infoFontSize = (parseFloat(infoStyle.fontSize) || 34) / height * viewH;
-            this.infoBaseX = infoHud.x;
-            this.infoBaseY = infoHud.y;
-            this.infoTextBaseX = infoTextPoint.x;
-            this.infoTextBaseY = infoTextPoint.y - infoFontSize * 0.025;
+            this.infoBaseX = infoCenter.x;
+            this.infoBaseY = infoCenter.y;
+            this.infoTextBaseX = infoCenter.x;
+            this.infoTextBaseY = infoCenter.y - infoFontSize * 0.01;
             this.infoEllipseZ = 0.002;
             this.infoTextZ = 0.004;
             this.infoEllipse.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.002");
-            this.infoScaleX = infoHud.w;
-            this.infoScaleY = infoHud.h;
+            this.infoScaleX = infoCssWidth / width * viewW;
+            this.infoScaleY = infoCssHeight / height * viewH;
             this.infoEllipse.setAttribute("scale", this.infoScaleX + " " + this.infoScaleY + " 1");
             this.infoText.setAttribute("position", this.infoTextBaseX + " " + this.infoTextBaseY + " 0.004");
             this.infoText.setAttribute(
               "troika-text",
               "fontSize: " +
                 infoFontSize +
-                "; value: information; font: ./typefaces/ABCDiatypeRoundedEdu-Regular.otf; color: #111111; anchor: center; baseline: middle"
+                "; value: i; font: ./typefaces/Courgette-Regular.ttf; color: #111111; anchor: center; baseline: middle"
             );
 
             var timeRect = cssTime.getBoundingClientRect();
@@ -8259,8 +8266,8 @@ triggerReach: function () {
               "; value: live cam; font: ./typefaces/ABCDiatypeRoundedEdu-Light.otf; color: #111111; anchor: left; baseline: middle"
           );
 
-          var infoFallbackW = Math.max(corner * 2.65, liveSize * 5.75);
-          var infoFallbackH = Math.max(thick * 8, liveSize * 1.28);
+          var infoFallbackW = Math.max(corner * 1.02, liveSize * 1.92);
+          var infoFallbackH = Math.max(thick * 5.6, liveSize * 1.0);
           var infoFallbackX = left + corner + pad * 0.78 + infoFallbackW / 2;
           this.infoBaseX = infoFallbackX;
           this.infoBaseY = statusY;
@@ -8276,8 +8283,8 @@ triggerReach: function () {
           this.infoText.setAttribute(
             "troika-text",
             "fontSize: " +
-              liveSize * 1.12 +
-              "; value: information; font: ./typefaces/ABCDiatypeRoundedEdu-Regular.otf; color: #111111; anchor: center; baseline: middle"
+              liveSize * 1.08 +
+              "; value: i; font: ./typefaces/Courgette-Regular.ttf; color: #111111; anchor: center; baseline: middle"
           );
 
           var timeX = Math.min(right - boxW / 2 - pad * 0.28, liveSize * 12.6);
@@ -8331,8 +8338,8 @@ triggerReach: function () {
             var hoverTarget = infoHovering ? 1 : 0;
             this.infoHoverAmount += (hoverTarget - (this.infoHoverAmount || 0)) * 0.18;
             var hover = this.infoHoverAmount || 0;
-            var rot = (1 - hover) * wave * THREE.MathUtils.degToRad(-4.2) + hover * THREE.MathUtils.degToRad(4);
-            var scaleBoost = 1 + hover * 0.065;
+            var rot = (1 - hover) * wave * THREE.MathUtils.degToRad(-4.2) + hover * THREE.MathUtils.degToRad(8);
+            var scaleBoost = 1 + hover * 0.32;
             this.infoEllipse.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.002");
             this.infoText.setAttribute("position", this.infoTextBaseX + " " + this.infoTextBaseY + " 0.004");
             if (this.infoScaleX && this.infoScaleY) {
@@ -8532,7 +8539,7 @@ triggerReach: function () {
 
       <!-- Static camera: original-style view, closer and flatter toward the house -->
       <a-entity
-        position="-2.35 1.75 -4.5"
+        position="-2.5 1.75 -4.5"
         rotation="49.5 -4 12"
         camera="active: true; fov: 70; near: 0.01; far: 1000"
         curved-world-drag-look
@@ -8545,7 +8552,7 @@ triggerReach: function () {
         <div class="live-cam-corner top-right"></div>
         <div class="live-cam-corner bottom-left"></div>
         <div class="live-cam-corner bottom-right"></div>
-        <button id="liveCamInformation" class="live-cam-information-button" type="button" aria-label="Information"><span>information</span></button>
+        <button id="liveCamInformation" class="live-cam-information-button" type="button" aria-label="Information"><span>i</span></button>
         <div class="live-cam-status">
           <span class="live-cam-dot"></span>
           <span>live cam</span>
@@ -8632,13 +8639,15 @@ triggerReach: function () {
 
         if (liveCamInformation) {
           var informationJiggleTimer = null;
+          var canUsePointerHover = !window.matchMedia || window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
           function scheduleInformationJiggle() {
             if (informationJiggleTimer) clearTimeout(informationJiggleTimer);
             informationJiggleTimer = setTimeout(function () {
+              var hoveringNow = canUsePointerHover && liveCamInformation.matches(":hover");
               if (
                 !liveCamInformation.classList.contains("is-playing") &&
-                !liveCamInformation.matches(":hover") &&
+                !hoveringNow &&
                 !liveCamInformation.classList.contains("is-hovering")
               ) {
                 liveCamInformation.classList.add("is-jiggling");
@@ -8666,7 +8675,8 @@ triggerReach: function () {
           scheduleInformationJiggle();
 
           function syncInformationHover(event) {
-            var hovering = !!(sceneEl && sceneEl.is && sceneEl.is("vr-mode") && pointerIsOnInformation(event));
+            var isTouchPointer = event && event.pointerType === "touch";
+            var hovering = !!(sceneEl && sceneEl.is && sceneEl.is("vr-mode") && !isTouchPointer && pointerIsOnInformation(event));
             liveCamInformation.classList.toggle("is-hovering", hovering);
           }
 
@@ -8675,10 +8685,20 @@ triggerReach: function () {
             liveCamInformation.classList.remove("is-hovering");
           }, true);
 
-          liveCamInformation.addEventListener("pointerdown", triggerInformationSound);
+          liveCamInformation.addEventListener("pointerdown", function (event) {
+            if (event.pointerType === "touch") {
+              liveCamInformation.classList.remove("is-hovering");
+              setTimeout(function () { liveCamInformation.blur(); }, 0);
+            }
+            triggerInformationSound(event);
+          });
           window.addEventListener("pointerdown", function (event) {
             if (!(sceneEl && sceneEl.is && sceneEl.is("vr-mode"))) return;
-            if (pointerIsOnInformation(event)) triggerInformationSound(event);
+            if (pointerIsOnInformation(event)) {
+              if (event.pointerType === "touch") liveCamInformation.classList.remove("is-hovering");
+              triggerInformationSound(event);
+              if (event.pointerType === "touch") setTimeout(function () { liveCamInformation.blur(); }, 0);
+            }
           }, true);
         }
 
