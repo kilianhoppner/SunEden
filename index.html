@@ -1453,17 +1453,22 @@
       });
       AFRAME.registerComponent("exhibition-audio", {
         schema: {
-          riverVolume: { type: "number", default: 0.16 },
-          chickenVolume: { type: "number", default: 0.14 },
-          chickenFireBoost: { type: "number", default: 0.12 },
-          fireIntroVolume: { type: "number", default: 0.38 },
-          fireBedVolume: { type: "number", default: 0.42 },
+          riverVolume: { type: "number", default: 0.14 },
+          chickenVolume: { type: "number", default: 0.12 },
+          chickenFireBoost: { type: "number", default: 0.1 },
+          fireIntroVolume: { type: "number", default: 0.34 },
+          fireBedVolume: { type: "number", default: 0.38 },
           fireBedDelay: { type: "number", default: 2.4 },
-          helicopterVolume: { type: "number", default: 0.88 },
-          footstepVolume: { type: "number", default: 0.24 },
-          turnSoundVolume: { type: "number", default: 0.052 },
-          breathingVolume: { type: "number", default: 0.052 },
-          swooshVolume: { type: "number", default: 0.09 },
+          helicopterVolume: { type: "number", default: 0.78 },
+          footstepVolume: { type: "number", default: 0.22 },
+          turnSoundVolume: { type: "number", default: 0.045 },
+          breathingVolume: { type: "number", default: 0.046 },
+          swooshVolume: { type: "number", default: 0.075 },
+          armSwooshVolume: { type: "number", default: 0.12 },
+          hiVolume: { type: "number", default: 0.86 },
+          armsVolume: { type: "number", default: 0.88 },
+
+          birdVolume: { type: "number", default: 0.44 },
           fadeSpeed: { type: "number", default: 1.55 }
         },
         init: function () {
@@ -1493,6 +1498,11 @@
           this.fireBuffersLoading = false;
           this.fireIntroBuffer = null;
           this.fireBedBuffer = null;
+          this.hiBuffer = null;
+          this.armsBuffer = null;
+          this.birdBuffer = null;
+          this.lastBirdNear = false;
+          this.nextBirdSoundTime = 0;
           this.fireIntroSource = null;
           this.fireBedSource = null;
           this.fireIntroGain = null;
@@ -1619,12 +1629,21 @@
         },
         loadAudioBuffers: function () {
           if (!this.audioContext || this.fireBuffersLoading) return;
-          if (this.fireIntroBuffer && this.fireBedBuffer && this.riverBuffer) return;
+          if (this.fireIntroBuffer && this.fireBedBuffer && this.riverBuffer && this.hiBuffer && this.armsBuffer && this.birdBuffer) return;
           var self = this;
           this.fireBuffersLoading = true;
           this.loadBuffer("audio/river.wav", function (buffer) {
             self.riverBuffer = buffer;
             if (self.mediaUnlocked && !self.riverLoop) self.startSeamlessLoop("river");
+          });
+          this.loadBuffer("audio/hi.wav", function (buffer) {
+            self.hiBuffer = buffer;
+          });
+          this.loadBuffer("audio/arms.wav", function (buffer) {
+            self.armsBuffer = buffer;
+          });
+          this.loadBuffer("audio/bird.wav", function (buffer) {
+            self.birdBuffer = buffer;
           });
           this.loadBuffer("audio/fire.wav", function (buffer) {
             self.fireIntroBuffer = buffer;
@@ -1741,6 +1760,101 @@
           if (!audio || !audio.paused) return;
           audio.play().catch(function () {});
         },
+playBufferAt: function (buffer, position, volume, options) {
+  var ctx = this.ensureAudioContext();
+  if (!ctx || ctx.state !== "running" || !buffer) return;
+  options = options || {};
+  var now = ctx.currentTime;
+  var source = ctx.createBufferSource();
+  var gain = ctx.createGain();
+  var panner = ctx.createPanner();
+  source.buffer = buffer;
+  source.playbackRate.value = options.rate || 1;
+  panner.panningModel = "HRTF";
+  panner.distanceModel = options.distanceModel || "inverse";
+  panner.refDistance = options.refDistance || 2.2;
+  panner.maxDistance = options.maxDistance || 28;
+  panner.rolloffFactor = options.rolloffFactor || 1.12;
+  if (position) this.setPannerPosition(panner, position);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume || 0.4), now + (options.attack || 0.018));
+  gain.gain.setValueAtTime(Math.max(0.0002, volume || 0.4), now + Math.max(options.attack || 0.018, buffer.duration - (options.release || 0.08)));
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + buffer.duration + (options.tail || 0.02));
+  var outputNode = source;
+  if (options.invert) {
+    var inverter = ctx.createGain();
+    inverter.gain.value = -1;
+    source.connect(inverter);
+    outputNode = inverter;
+  }
+  outputNode.connect(gain).connect(panner).connect(ctx.destination);
+  source.start(now);
+  source.stop(now + buffer.duration + (options.tail || 0.08));
+},
+playCharacterHi: function (position) {
+  this.playBufferAt(this.hiBuffer, position, this.data.hiVolume, {
+    refDistance: 0.7,
+    maxDistance: 30,
+    rolloffFactor: 2.15,
+    attack: 0.01,
+    release: 0.06
+  });
+},
+playCharacterArms: function (position) {
+  this.playBufferAt(this.armsBuffer, position, this.data.armsVolume, {
+    refDistance: 0.8,
+    maxDistance: 30,
+    rolloffFactor: 2.05,
+    attack: 0.012,
+    release: 0.08
+  });
+},
+playArmReachSwoosh: function (position) {
+  var ctx = this.ensureAudioContext();
+  if (!ctx || ctx.state !== "running") return;
+  var now = ctx.currentTime;
+  var duration = 1.85;
+  var length = Math.max(1, Math.floor(ctx.sampleRate * duration));
+  var buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+  var data = buffer.getChannelData(0);
+  for (var i = 0; i < length; i++) {
+    var t = i / Math.max(1, length - 1);
+    var env = Math.sin(t * Math.PI);
+    data[i] = (Math.random() * 2 - 1) * env * env;
+  }
+  var source = ctx.createBufferSource();
+  var filter = ctx.createBiquadFilter();
+  var gain = ctx.createGain();
+  var panner = ctx.createPanner();
+  source.buffer = buffer;
+  filter.type = "bandpass";
+  filter.frequency.setValueAtTime(900, now);
+  filter.frequency.linearRampToValueAtTime(2600, now + duration * 0.7);
+  filter.frequency.linearRampToValueAtTime(1800, now + duration);
+  filter.Q.value = 1.05;
+  panner.panningModel = "HRTF";
+  panner.distanceModel = "inverse";
+  panner.refDistance = 0.85;
+  panner.maxDistance = 28;
+  panner.rolloffFactor = 1.9;
+  if (position) this.setPannerPosition(panner, position);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.linearRampToValueAtTime(this.data.armSwooshVolume, now + 0.2);
+  gain.gain.setValueAtTime(this.data.armSwooshVolume * 0.72, now + duration * 0.7);
+  gain.gain.linearRampToValueAtTime(0.0001, now + duration);
+  source.connect(filter).connect(gain).connect(panner).connect(ctx.destination);
+  source.start(now);
+  source.stop(now + duration + 0.04);
+},
+playBirdSqueak: function (position) {
+  this.playBufferAt(this.birdBuffer, position, this.data.birdVolume, {
+    refDistance: 3.0,
+    maxDistance: 34,
+    rolloffFactor: 1.0,
+    attack: 0.008,
+    release: 0.08
+  });
+},
         tryStart: function () {
           this.ensureAudioContext();
           this.playAudio(this.chicken);
@@ -1973,6 +2087,27 @@
           this.tmpPos.set(-58, THREE.MathUtils.lerp(8, 148, nightAmount), -58);
           this.setPannerPosition(this.swooshPanner, this.tmpPos);
         },
+updateBirdSqueak: function () {
+          if (!this.mediaUnlocked || !this.birdBuffer) return;
+          var bird = document.getElementById("bird");
+          var cameraEl = this.el.sceneEl && this.el.sceneEl.querySelector("[camera]");
+          if (!bird || !bird.object3D || !cameraEl || !cameraEl.object3D) return;
+          bird.object3D.updateMatrixWorld(true);
+          cameraEl.object3D.updateMatrixWorld(true);
+          bird.object3D.getWorldPosition(this.tmpPos);
+          cameraEl.object3D.getWorldPosition(this.tmpCam);
+          var distance = this.tmpPos.distanceTo(this.tmpCam);
+          var near = distance < 14.5;
+          var nowMs = performance.now();
+          if (near && !this.lastBirdNear) {
+            this.nextBirdSoundTime = nowMs + 900 + Math.random() * 1700;
+          }
+          if (near && nowMs >= this.nextBirdSoundTime) {
+            this.playBirdSqueak(this.tmpPos);
+            this.nextBirdSoundTime = nowMs + 3800 + Math.random() * 4200;
+          }
+          this.lastBirdNear = near;
+        },
         updateBreathing: function (dt, nightAmount) {
           if (!this.breathing || !this.breathGain || !this.breathPanner) return;
           var human = document.getElementById("human");
@@ -2015,6 +2150,7 @@
           this.updateFootsteps();
           this.updateHelicopter(dt, NIGHT_MODE_AMOUNT);
           this.updateSwoosh(dt, NIGHT_MODE_AMOUNT);
+          this.updateBirdSqueak();
           this.updateBreathing(dt, NIGHT_MODE_AMOUNT);
 
           var introTarget = this.fireActive && this.fireIntroStarted && this.fireIntroSource
@@ -2558,8 +2694,9 @@
           var dy = event.clientY - down.y;
           var moved = Math.sqrt(dx * dx + dy * dy);
           if (moved > 10 || performance.now() - down.time > 520) return;
-          if (!this.isReachGestureAllowed()) return;
-          if (this.isPointerOnCharacter(event)) this.triggerReach();
+          if (!this.isPointerOnCharacter(event)) return;
+          var reachStarted = this.isReachGestureAllowed() && this.triggerReach();
+          if (!reachStarted) this.playCharacterClickSound();
         },
         onReachPointerCancel: function (event) {
           if (this.reachPointerDown && this.reachPointerDown.id === event.pointerId) {
@@ -2588,10 +2725,29 @@
           this.el.object3D.updateMatrixWorld(true);
           return this.reachRaycaster.intersectObject(this.el.object3D, true).length > 0;
         },
-        triggerReach: function () {
-          if (this.reachT < this.reachDuration) return;
-          this.reachT = 0;
-        },
+playCharacterClickSound: function () {
+  var audio = this.el.sceneEl && this.el.sceneEl.components && this.el.sceneEl.components["exhibition-audio"];
+  if (!audio || !audio.playCharacterHi) return;
+  this.el.object3D.updateMatrixWorld(true);
+  this.el.object3D.getWorldPosition(this.tmp);
+  this.tmp.y += 0.62;
+  audio.playCharacterHi(this.tmp);
+},
+playReachSwooshSound: function () {
+  var audio = this.el.sceneEl && this.el.sceneEl.components && this.el.sceneEl.components["exhibition-audio"];
+  if (!audio || !audio.playCharacterArms) return;
+  this.el.object3D.updateMatrixWorld(true);
+  this.el.object3D.getWorldPosition(this.tmp);
+  this.tmp.y += 0.42;
+  audio.playCharacterArms(this.tmp);
+  if (audio.playArmReachSwoosh) audio.playArmReachSwoosh(this.tmp);
+},
+triggerReach: function () {
+  if (this.reachT < this.reachDuration) return false;
+  this.reachT = 0;
+  this.playReachSwooshSound();
+  return true;
+},
         reachEnvelope: function () {
           if (this.reachT >= this.reachDuration) return 0;
           var u = THREE.MathUtils.clamp(this.reachT / this.reachDuration, 0, 1);
@@ -3927,7 +4083,6 @@
         var houses = document.getElementById("houses");
         var trees = document.getElementById("trees");
         var vegetableGarden = document.getElementById("vegetableGarden");
-        var mountains = document.getElementById("mountains");
         var worldRoot = document.getElementById("worldRoot");
         if (
           !lake ||
@@ -3935,7 +4090,6 @@
           !houses ||
           !trees ||
           !vegetableGarden ||
-          !mountains ||
           !worldRoot
         )
           return;
@@ -6390,7 +6544,7 @@
           Math.sin(mountainLatitude),
           Math.cos(mountainLongitude) * mountainCosLat
         ).normalize();
-        createMountain(mountainNormal);
+        /* Exhibition live-cam: mountain removed. */
 
         var umbrellaLongitude = normalizeLonRad(mountainLongitude + 0.42);
         var umbrellaLatitude = THREE.MathUtils.clamp(
@@ -6400,260 +6554,7 @@
         );
         createRiverbankUmbrellaChair(umbrellaLongitude, umbrellaLatitude);
 
-        function createMountainOnlookers(worldRootEl, mLon, mLat) {
-          var matStd = "shader: standard; roughness: 0.68; metalness: 0";
-
-          function makeMountainHuman(opts) {
-            var shirt = opts.shirtColor;
-            var skin = opts.skinColor || "#F2B28D";
-            var sclera = opts.scleraColor || "#F2F2F2";
-            var iris = opts.irisColor || "#4D9FFF";
-            var pupil = opts.pupilColor || "#1E293B";
-            var hairStyle = opts.hairStyle || "straw";
-            var pantsColor = opts.pantsColor || "#6B4423";
-            var torsoYs = [
-              -0.145, -0.087, -0.029, 0.029,
-              0.087, 0.145, 0.203, 0.261
-            ];
-            var armYs = [
-              -0.1925, -0.1375, -0.0825, -0.0275,
-              0.0275, 0.0825, 0.1375, 0.1925
-            ];
-            var eyeMat =
-              "shader: standard; roughness: 0.55; metalness: 0";
-            var irisMat =
-              "shader: standard; roughness: 0.22; metalness: 0.18";
-            var pupilMat =
-              "shader: standard; roughness: 0.35; metalness: 0";
-            var legMat =
-              "shader: standard; roughness: 0.72; metalness: 0";
-            var pantsLegMat = opts.pantsMaterial || legMat;
-
-            var root = document.createElement("a-entity");
-            root.setAttribute("scale", opts.scale || "1.74 1.74 1.74");
-            root.setAttribute(
-              "mountain-onlooker",
-              "mountainLon: " +
-                mLon +
-                "; mountainLat: " +
-                mLat +
-                "; anchorLon: " +
-                opts.anchorLon +
-                "; anchorLat: " +
-                opts.anchorLat +
-                "; wander: " +
-                (opts.wander != null ? opts.wander : 0.014) +
-                "; heightOffset: " +
-                (opts.heightOffset != null ? opts.heightOffset : 0.152) +
-                "; phase: " +
-                opts.phase
-            );
-
-            /* Torso — same 8 stacked cylinders as `#human`; solid shirt */
-            var torso = document.createElement("a-entity");
-            torso.setAttribute("position", "0 0.45 0");
-            var ti;
-            for (ti = 0; ti < torsoYs.length; ti++) {
-              var ring = document.createElement("a-cylinder");
-              ring.setAttribute("position", "0 " + torsoYs[ti] + " 0");
-              ring.setAttribute("radius", "0.11");
-              ring.setAttribute("height", "0.058");
-              ring.setAttribute("color", shirt);
-              ring.setAttribute("material", matStd);
-              torso.appendChild(ring);
-            }
-            root.appendChild(torso);
-
-            /* Head + eyes — geometry matches `#human` `.human-head` */
-            var head = document.createElement("a-entity");
-            head.setAttribute(
-              "class",
-              "human-head mountain-onlooker-head"
-            );
-            head.setAttribute("position", "0 0.88 0");
-
-            var face = document.createElement("a-sphere");
-            face.setAttribute("position", "0 0 0");
-            face.setAttribute("radius", "0.14");
-            face.setAttribute("color", skin);
-            head.appendChild(face);
-
-            var ew = document.createElement("a-sphere");
-            ew.setAttribute("position", "-0.054 0.012 -0.114");
-            ew.setAttribute("radius", "0.028");
-            ew.setAttribute("color", sclera);
-            ew.setAttribute("material", eyeMat);
-            head.appendChild(ew);
-            ew = document.createElement("a-sphere");
-            ew.setAttribute("position", "0.054 0.012 -0.114");
-            ew.setAttribute("radius", "0.028");
-            ew.setAttribute("color", sclera);
-            ew.setAttribute("material", eyeMat);
-            head.appendChild(ew);
-
-            var ir = document.createElement("a-sphere");
-            ir.setAttribute("position", "-0.054 0.012 -0.128");
-            ir.setAttribute("radius", "0.0185");
-            ir.setAttribute("color", iris);
-            ir.setAttribute("material", irisMat);
-            head.appendChild(ir);
-            ir = document.createElement("a-sphere");
-            ir.setAttribute("position", "0.054 0.012 -0.128");
-            ir.setAttribute("radius", "0.0185");
-            ir.setAttribute("color", iris);
-            ir.setAttribute("material", irisMat);
-            head.appendChild(ir);
-
-            var pu = document.createElement("a-sphere");
-            pu.setAttribute("position", "-0.054 0.012 -0.139");
-            pu.setAttribute("radius", "0.0078");
-            pu.setAttribute("color", pupil);
-            pu.setAttribute("material", pupilMat);
-            head.appendChild(pu);
-            pu = document.createElement("a-sphere");
-            pu.setAttribute("position", "0.054 0.012 -0.139");
-            pu.setAttribute("radius", "0.0078");
-            pu.setAttribute("color", pupil);
-            pu.setAttribute("material", pupilMat);
-            head.appendChild(pu);
-
-            /*
-             * Hat / hair parented under `.human-head` so mountain-onlooker head rotation
-             * moves the whole upper silhouette (offsets are root-space minus head at y=0.88).
-             */
-            var hairMat = "shader: standard; roughness: 0.88; metalness: 0";
-            if (hairStyle === "brown") {
-              /* Brown short hair, local to head */
-              var hBrim = document.createElement("a-sphere");
-              hBrim.setAttribute("position", "0 0.13 -0.015");
-              hBrim.setAttribute("radius", "0.145");
-              hBrim.setAttribute("scale", "1 0.42 0.9");
-              hBrim.setAttribute("color", "#4A3728");
-              hBrim.setAttribute("material", hairMat);
-              head.appendChild(hBrim);
-              var hTop = document.createElement("a-sphere");
-              hTop.setAttribute("position", "0 0.07 -0.06");
-              hTop.setAttribute("radius", "0.08");
-              hTop.setAttribute("scale", "1.2 0.55 0.7");
-              hTop.setAttribute("color", "#3D2E22");
-              hTop.setAttribute("material", hairMat);
-              head.appendChild(hTop);
-            } else {
-              /* Straw hat — same silhouette as `#human`, grouped with head */
-              var hatBrim = document.createElement("a-sphere");
-              hatBrim.setAttribute("position", "0 0.13 -0.015");
-              hatBrim.setAttribute("radius", "0.145");
-              hatBrim.setAttribute("scale", "1 0.42 0.9");
-              hatBrim.setAttribute("color", "#F7D35A");
-              hatBrim.setAttribute(
-                "material",
-                "shader: standard; roughness: 0.65; metalness: 0"
-              );
-              head.appendChild(hatBrim);
-              var hatTop = document.createElement("a-sphere");
-              hatTop.setAttribute("position", "0 0.07 -0.06");
-              hatTop.setAttribute("radius", "0.08");
-              hatTop.setAttribute("scale", "1.2 0.55 0.7");
-              hatTop.setAttribute("color", "#F7D35A");
-              hatTop.setAttribute(
-                "material",
-                "shader: standard; roughness: 0.65; metalness: 0"
-              );
-              head.appendChild(hatTop);
-            }
-
-            root.appendChild(head);
-
-            function appendArm(sideSign, className) {
-              var arm = document.createElement("a-entity");
-              arm.setAttribute("class", className);
-              arm.setAttribute(
-                "position",
-                sideSign * 0.16 + " 0.43 0"
-              );
-              var ai;
-              for (ai = 0; ai < armYs.length; ai++) {
-                var seg = document.createElement("a-cylinder");
-                seg.setAttribute("position", "0 " + armYs[ai] + " 0");
-                seg.setAttribute("radius", "0.035");
-                seg.setAttribute("height", "0.055");
-                seg.setAttribute("color", shirt);
-                seg.setAttribute("material", matStd);
-                arm.appendChild(seg);
-              }
-              root.appendChild(arm);
-            }
-            appendArm(-1, "left-arm");
-            appendArm(1, "right-arm");
-
-            var legL = document.createElement("a-cylinder");
-            legL.setAttribute("class", "left-leg");
-            legL.setAttribute("position", "-0.07 0.06 0");
-            legL.setAttribute("radius", "0.04");
-            legL.setAttribute("height", "0.45");
-            legL.setAttribute("color", pantsColor);
-            legL.setAttribute("material", pantsLegMat);
-            root.appendChild(legL);
-
-            var legR = document.createElement("a-cylinder");
-            legR.setAttribute("class", "right-leg");
-            legR.setAttribute("position", "0.07 0.06 0");
-            legR.setAttribute("radius", "0.04");
-            legR.setAttribute("height", "0.45");
-            legR.setAttribute("color", pantsColor);
-            legR.setAttribute("material", pantsLegMat);
-            root.appendChild(legR);
-
-            worldRootEl.appendChild(root);
-          }
-
-          var anchorLL = computeMountainVisitorAnchors(mLon, mLat, riverLatitude);
-          var girlLL = anchorLL.girlLL;
-          var boyLL = anchorLL.boyLL;
-
-          /* Same rig as `#human`; solid torso and sleeves */
-          makeMountainHuman({
-            anchorLon: girlLL.lon,
-            anchorLat: girlLL.lat,
-            wander: 0.014,
-            phase: 0.72,
-            shirtColor: "#FF4FB8",
-            hairStyle: "straw",
-            pantsColor: "#3E5F8A",
-            pantsMaterial:
-              "shader: standard; roughness: 0.8; metalness: 0.03"
-          });
-
-          makeMountainHuman({
-            anchorLon: boyLL.lon,
-            anchorLat: boyLL.lat,
-            wander: 0.014,
-            phase: 3.28,
-            shirtColor: "#FF922B",
-            skinColor: "#B8835A",
-            scleraColor: "#EDE6DC",
-            irisColor: "#5C4033",
-            pupilColor: "#2A1810",
-            hairStyle: "brown"
-          });
-        }
-
-        function spawnMountainVisitorsOnce() {
-          if (spawnMountainVisitorsOnce.didRun) return;
-          spawnMountainVisitorsOnce.didRun = true;
-          createMountainOnlookers(worldRoot, mountainLongitude, mountainLatitude);
-        }
-        spawnMountainVisitorsOnce.didRun = false;
-
-        /* Spawn after A-Frame attaches components — entities added too early often stay stuck at origin */
-        var sceneForVisitors = document.querySelector("a-scene");
-        if (sceneForVisitors) {
-          sceneForVisitors.addEventListener("loaded", spawnMountainVisitorsOnce);
-          if (sceneForVisitors.hasLoaded) {
-            spawnMountainVisitorsOnce();
-          }
-        }
-
+        /* Exhibition live-cam: mountain onlookers removed. */
         createWoodenBridge(woodenBridgeSites[0].lon);
         createWoodenBridge(woodenBridgeSites[1].lon, {
           spanStretch: woodenBridgeSites[1].spanStretch
@@ -6823,335 +6724,9 @@
         /*
          * Campfire visitors: two wander on grass; one sits on a bench facing the flames.
          */
-        function createCampfireGatheringHumans() {
-          var matStd = "shader: standard; roughness: 0.68; metalness: 0";
-          var hatMat =
-            "shader: standard; roughness: 0.65; metalness: 0";
-          var eyeMat =
-            "shader: standard; roughness: 0.55; metalness: 0";
-          var irisMat =
-            "shader: standard; roughness: 0.22; metalness: 0.18";
-          var pupilMat =
-            "shader: standard; roughness: 0.35; metalness: 0";
-          var legMat =
-            "shader: standard; roughness: 0.72; metalness: 0";
-
-          var torsoYs = [
-            -0.145, -0.087, -0.029, 0.029,
-            0.087, 0.145, 0.203, 0.261
-          ];
-          var armYs = [
-            -0.1925, -0.1375, -0.0825, -0.0275,
-            0.0275, 0.0825, 0.1375, 0.1925
-          ];
-
-          function appendCampfireHuman(o) {
-            var root = document.createElement("a-entity");
-            root.setAttribute("scale", "1.74 1.74 1.74");
-            var attachParent = root;
-            if (o.sitBench) {
-              root.setAttribute(
-                "campfire-human-sit-bench",
-                "campfireLon: " +
-                  campfireLongitude +
-                  "; campfireLat: " +
-                  campfireLatitude +
-                  "; benchIndex: " +
-                  (o.benchIndex != null ? o.benchIndex : 2) +
-                  "; phaseOffset: " +
-                  (o.phaseOffset != null ? o.phaseOffset : 0)
-              );
-              var poseWrap = document.createElement("a-entity");
-              poseWrap.setAttribute("rotation", "-11 0 0");
-              poseWrap.setAttribute("position", "0 0.045 -0.01");
-              root.appendChild(poseWrap);
-              attachParent = poseWrap;
-            } else {
-              root.setAttribute(
-                "campfire-human-walk",
-                "longitude: " +
-                  campfireLongitude +
-                  "; latitude: " +
-                  campfireLatitude +
-                  "; speed: " +
-                  o.speed +
-                  "; phaseOffset: " +
-                  o.phaseOffset +
-                  "; radiusLon: " +
-                  o.radiusLon +
-                  "; radiusLat: " +
-                  o.radiusLat
-              );
-            }
-
-            function shirtColorAt(kind, index) {
-              if (!kind || kind === "solid") return o.shirt;
-              return index % 2 === 0 ? o.stripeA : o.stripeB;
-            }
-
-            var torso = document.createElement("a-entity");
-            torso.setAttribute("position", "0 0.45 0");
-            var ti;
-            for (ti = 0; ti < torsoYs.length; ti++) {
-              var ring = document.createElement("a-cylinder");
-              ring.setAttribute("position", "0 " + torsoYs[ti] + " 0");
-              ring.setAttribute("radius", "0.11");
-              ring.setAttribute("height", "0.058");
-              ring.setAttribute(
-                "color",
-                shirtColorAt(o.shirtKind, ti)
-              );
-              ring.setAttribute("material", matStd);
-              torso.appendChild(ring);
-            }
-            attachParent.appendChild(torso);
-            if (o.sitBench) {
-              torso.setAttribute("position", "0 0.395 -0.012");
-            }
-
-            var head = document.createElement("a-entity");
-            head.setAttribute("class", "human-head");
-            head.setAttribute("position", "0 0.88 0");
-
-            var face = document.createElement("a-sphere");
-            face.setAttribute("position", "0 0 0");
-            face.setAttribute("radius", "0.14");
-            face.setAttribute("color", o.skin);
-            head.appendChild(face);
-
-            var ew = document.createElement("a-sphere");
-            ew.setAttribute("position", "-0.054 0.012 -0.114");
-            ew.setAttribute("radius", "0.028");
-            ew.setAttribute("color", o.sclera);
-            ew.setAttribute("material", eyeMat);
-            head.appendChild(ew);
-            ew = document.createElement("a-sphere");
-            ew.setAttribute("position", "0.054 0.012 -0.114");
-            ew.setAttribute("radius", "0.028");
-            ew.setAttribute("color", o.sclera);
-            ew.setAttribute("material", eyeMat);
-            head.appendChild(ew);
-
-            var ir = document.createElement("a-sphere");
-            ir.setAttribute("position", "-0.054 0.012 -0.128");
-            ir.setAttribute("radius", "0.0185");
-            ir.setAttribute("color", o.iris);
-            ir.setAttribute("material", irisMat);
-            head.appendChild(ir);
-            ir = document.createElement("a-sphere");
-            ir.setAttribute("position", "0.054 0.012 -0.128");
-            ir.setAttribute("radius", "0.0185");
-            ir.setAttribute("color", o.iris);
-            ir.setAttribute("material", irisMat);
-            head.appendChild(ir);
-
-            var pu = document.createElement("a-sphere");
-            pu.setAttribute("position", "-0.054 0.012 -0.139");
-            pu.setAttribute("radius", "0.0078");
-            pu.setAttribute("color", o.pupil);
-            pu.setAttribute("material", pupilMat);
-            head.appendChild(pu);
-            pu = document.createElement("a-sphere");
-            pu.setAttribute("position", "0.054 0.012 -0.139");
-            pu.setAttribute("radius", "0.0078");
-            pu.setAttribute("color", o.pupil);
-            pu.setAttribute("material", pupilMat);
-            head.appendChild(pu);
-
-            if (o.hairStyle === "brown") {
-              var hairMatB =
-                "shader: standard; roughness: 0.88; metalness: 0";
-              var hBrimB = document.createElement("a-sphere");
-              hBrimB.setAttribute("position", "0 0.13 -0.015");
-              hBrimB.setAttribute("radius", "0.145");
-              hBrimB.setAttribute("scale", "1 0.42 0.9");
-              hBrimB.setAttribute("color", "#2C1810");
-              hBrimB.setAttribute("material", hairMatB);
-              head.appendChild(hBrimB);
-              var hTopB = document.createElement("a-sphere");
-              hTopB.setAttribute("position", "0 0.07 -0.06");
-              hTopB.setAttribute("radius", "0.08");
-              hTopB.setAttribute("scale", "1.2 0.55 0.7");
-              hTopB.setAttribute("color", "#1A0F0A");
-              hTopB.setAttribute("material", hairMatB);
-              head.appendChild(hTopB);
-            } else if (o.hairStyle === "mediumBrown") {
-              var hairMatL =
-                "shader: standard; roughness: 0.88; metalness: 0";
-              var hBrimL = document.createElement("a-sphere");
-              hBrimL.setAttribute("position", "0 0.13 -0.015");
-              hBrimL.setAttribute("radius", "0.145");
-              hBrimL.setAttribute("scale", "1 0.42 0.9");
-              hBrimL.setAttribute("color", "#5D4037");
-              hBrimL.setAttribute("material", hairMatL);
-              head.appendChild(hBrimL);
-              var hTopL = document.createElement("a-sphere");
-              hTopL.setAttribute("position", "0 0.07 -0.06");
-              hTopL.setAttribute("radius", "0.08");
-              hTopL.setAttribute("scale", "1.2 0.55 0.7");
-              hTopL.setAttribute("color", "#4E342E");
-              hTopL.setAttribute("material", hairMatL);
-              head.appendChild(hTopL);
-            } else if (o.hairStyle === "lightBrown") {
-              var hairMatLB =
-                "shader: standard; roughness: 0.88; metalness: 0";
-              var hBrimLB = document.createElement("a-sphere");
-              hBrimLB.setAttribute("position", "0 0.13 -0.015");
-              hBrimLB.setAttribute("radius", "0.145");
-              hBrimLB.setAttribute("scale", "1 0.42 0.9");
-              hBrimLB.setAttribute("color", "#C4A574");
-              hBrimLB.setAttribute("material", hairMatLB);
-              head.appendChild(hBrimLB);
-              var hTopLB = document.createElement("a-sphere");
-              hTopLB.setAttribute("position", "0 0.07 -0.06");
-              hTopLB.setAttribute("radius", "0.08");
-              hTopLB.setAttribute("scale", "1.2 0.55 0.7");
-              hTopLB.setAttribute("color", "#A88968");
-              hTopLB.setAttribute("material", hairMatLB);
-              head.appendChild(hTopLB);
-            } else {
-              var hatBrim = document.createElement("a-sphere");
-              hatBrim.setAttribute("position", "0 0.13 -0.015");
-              hatBrim.setAttribute("radius", "0.145");
-              hatBrim.setAttribute("scale", "1 0.42 0.9");
-              hatBrim.setAttribute("color", "#F7D35A");
-              hatBrim.setAttribute("material", hatMat);
-              head.appendChild(hatBrim);
-              var hatTop = document.createElement("a-sphere");
-              hatTop.setAttribute("position", "0 0.07 -0.06");
-              hatTop.setAttribute("radius", "0.08");
-              hatTop.setAttribute("scale", "1.2 0.55 0.7");
-              hatTop.setAttribute("color", "#F7D35A");
-              hatTop.setAttribute("material", hatMat);
-              head.appendChild(hatTop);
-            }
-
-            attachParent.appendChild(head);
-
-            function appendArm(sideSign, className) {
-              var arm = document.createElement("a-entity");
-              arm.setAttribute("class", className);
-              arm.setAttribute(
-                "position",
-                sideSign * 0.16 + " 0.43 0"
-              );
-              var ai;
-              for (ai = 0; ai < armYs.length; ai++) {
-                var seg = document.createElement("a-cylinder");
-                seg.setAttribute("position", "0 " + armYs[ai] + " 0");
-                seg.setAttribute("radius", "0.035");
-                seg.setAttribute("height", "0.055");
-                seg.setAttribute(
-                  "color",
-                  shirtColorAt(o.shirtKind, ai)
-                );
-                seg.setAttribute("material", matStd);
-                arm.appendChild(seg);
-              }
-              attachParent.appendChild(arm);
-            }
-            appendArm(-1, "left-arm");
-            appendArm(1, "right-arm");
-
-            var legL = document.createElement("a-cylinder");
-            legL.setAttribute("class", "left-leg");
-            legL.setAttribute("position", "-0.07 0.06 0");
-            legL.setAttribute("radius", "0.04");
-            legL.setAttribute("height", "0.45");
-            legL.setAttribute("color", o.pants);
-            legL.setAttribute("material", o.pantsMat || legMat);
-            attachParent.appendChild(legL);
-
-            var legR = document.createElement("a-cylinder");
-            legR.setAttribute("class", "right-leg");
-            legR.setAttribute("position", "0.07 0.06 0");
-            legR.setAttribute("radius", "0.04");
-            legR.setAttribute("height", "0.45");
-            legR.setAttribute("color", o.pants);
-            legR.setAttribute("material", o.pantsMat || legMat);
-            attachParent.appendChild(legR);
-
-            if (o.sitBench) {
-              var armL = root.querySelector(".left-arm");
-              var armR = root.querySelector(".right-arm");
-              var lLeg = root.querySelector(".left-leg");
-              var rLeg = root.querySelector(".right-leg");
-              if (armL) armL.setAttribute("rotation", "16 0 20");
-              if (armR) armR.setAttribute("rotation", "16 0 -20");
-              if (lLeg) {
-                lLeg.setAttribute("position", "-0.085 0.08 -0.045");
-                lLeg.setAttribute("rotation", "78 0 -24");
-              }
-              if (rLeg) {
-                rLeg.setAttribute("position", "0.085 0.08 -0.045");
-                rLeg.setAttribute("rotation", "78 0 24");
-              }
-            }
-
-            worldRoot.appendChild(root);
-          }
-
-          appendCampfireHuman({
-            shirtKind: "solid",
-            shirt: "#2563EB",
-            hairStyle: "lightBrown",
-            skin: "#E8B4A0",
-            sclera: "#F2F2F2",
-            iris: "#3D9AD6",
-            pupil: "#1E293B",
-            pants: "#3A3D42",
-            sitBench: true,
-            benchIndex: 2,
-            phaseOffset: 0.35
-          });
-
-          appendCampfireHuman({
-            shirtKind: "solid",
-            shirt: "#FDE047",
-            skin: "#6B4423",
-            hairStyle: "brown",
-            sclera: "#EDE6DC",
-            iris: "#4A3728",
-            pupil: "#1A0F0A",
-            pants: "#3D2E22",
-            speed: 0.27,
-            phaseOffset: 2.62,
-            radiusLon: 0.168,
-            radiusLat: 0.118
-          });
-
-          appendCampfireHuman({
-            shirtKind: "stripes",
-            shirt: "#FF85C8",
-            stripeA: "#FF85C8",
-            stripeB: "#1DCF6A",
-            hairStyle: "mediumBrown",
-            skin: "#C6866B",
-            sclera: "#F2F2F2",
-            iris: "#0F766E",
-            pupil: "#0C4A3E",
-            pants: "#4B5563",
-            pantsMat:
-              "shader: standard; roughness: 0.74; metalness: 0.04",
-            speed: 0.245,
-            phaseOffset: 5.18,
-            radiusLon: 0.18,
-            radiusLat: 0.126
-          });
-        }
-
-        createCampfireCircle(campfireNormal);
-        createCampfireBenches(campfireNormal);
-        createCampfireGatheringHumans();
-
+        /* Exhibition live-cam: campfire people code removed. */
         function isNearCampfire(longitude, latitude) {
-          var dLong = Math.abs(longitude - campfireLongitude);
-          dLong = Math.min(dLong, Math.PI * 2 - dLong);
-          var dLat = latitude - campfireLatitude;
-          /*
-           * Slightly larger than ~0.055 so a few trees aren’t crowding the ring; still compact.
-           */
-          return dLong * dLong + dLat * dLat < 0.073;
+          return false;
         }
 
         /* Same lat extents as createWoodenBridge — keep crowns off deck/railing */
@@ -7620,301 +7195,7 @@
           }
         });
 
-        function createGlobePastureCow() {
-          function cowLeg(px, py, pz, cls, cowMat) {
-            var lg = document.createElement("a-entity");
-            lg.setAttribute("class", cls);
-            lg.setAttribute("position", px + " " + py + " " + pz);
-            var shin = document.createElement("a-cylinder");
-            shin.setAttribute("radius", "0.023");
-            shin.setAttribute("height", "0.066");
-            shin.setAttribute("color", "#84654D");
-            shin.setAttribute("material", cowMat);
-            var hoof = document.createElement("a-box");
-            hoof.setAttribute("position", "0 -0.037 0.006");
-            hoof.setAttribute("width", "0.042");
-            hoof.setAttribute("height", "0.018");
-            hoof.setAttribute("depth", "0.036");
-            hoof.setAttribute("color", "#D2B899");
-            hoof.setAttribute("material", cowMat);
-            lg.appendChild(shin);
-            lg.appendChild(hoof);
-            return lg;
-          }
-
-          var cowMatPasture =
-            "shader: standard; roughness: 0.76; metalness: 0";
-
-          var pick = sampleGlobeCowGrazeLonLat(
-            makeRng(804217),
-            null,
-            null
-          );
-          if (!pick)
-            pick = {
-              lon: vegGardenLon + 0.14,
-              lat: vegGardenLat + 0.11
-            };
-          var pastureNorm = lonLatToUnitCow(
-            pick.lon,
-            pick.lat
-          );
-
-          var anchor = document.createElement("a-entity");
-          var cowScale = document.createElement("a-entity");
-          cowScale.setAttribute(
-            "scale",
-            "5.75 5.75 5.75"
-          );
-
-          var torso = document.createElement("a-box");
-          torso.setAttribute("position", "0 0.076 0");
-          torso.setAttribute("width", "0.138");
-          torso.setAttribute("height", "0.096");
-          torso.setAttribute("depth", "0.252");
-          torso.setAttribute("color", "#AE8F6F");
-          torso.setAttribute("material", cowMatPasture);
-
-          var belly = document.createElement("a-box");
-          belly.setAttribute("position", "0 0.057 0.012");
-          belly.setAttribute("width", "0.106");
-          belly.setAttribute("height", "0.052");
-          belly.setAttribute("depth", "0.192");
-          belly.setAttribute("color", "#D8C9B9");
-          belly.setAttribute("material", cowMatPasture);
-
-          var headGrp = document.createElement("a-entity");
-          headGrp.setAttribute("class", "cow-head");
-          headGrp.setAttribute(
-            "position",
-            "-0.002 0.124 0.132"
-          );
-
-          var headSpr = document.createElement("a-sphere");
-          headSpr.setAttribute("position", "0 0 0");
-          headSpr.setAttribute("radius", "0.056");
-          headSpr.setAttribute(
-            "scale",
-            "1.02 1.06 1.12"
-          );
-          headSpr.setAttribute("color", "#A58468");
-          headSpr.setAttribute("material", cowMatPasture);
-
-          var headPatch = document.createElement("a-sphere");
-          headPatch.setAttribute("position", "-0.024 0.01 0.02");
-          headPatch.setAttribute("radius", "0.032");
-          headPatch.setAttribute("scale", "0.82 0.55 0.55");
-          headPatch.setAttribute("color", "#7A604D");
-          headPatch.setAttribute("material", cowMatPasture);
-
-          var earL = document.createElement("a-sphere");
-          earL.setAttribute("position", "0.058 0.006 -0.002");
-          earL.setAttribute("radius", "0.026");
-          earL.setAttribute("scale", "0.38 0.72 0.22");
-          earL.setAttribute("rotation", "0 0 -22");
-          earL.setAttribute("color", "#8A6B54");
-          earL.setAttribute("material", cowMatPasture);
-          var earR = document.createElement("a-sphere");
-          earR.setAttribute("position", "-0.058 0.006 -0.002");
-          earR.setAttribute("radius", "0.026");
-          earR.setAttribute("scale", "0.38 0.72 0.22");
-          earR.setAttribute("rotation", "0 0 22");
-          earR.setAttribute("color", "#8A6B54");
-          earR.setAttribute("material", cowMatPasture);
-
-          var eyeWhiteMat =
-            cowMatPasture + "; roughness: 0.35";
-          var eyeWL = document.createElement("a-sphere");
-          eyeWL.setAttribute("radius", "0.009");
-          eyeWL.setAttribute(
-            "position",
-            "0.031 0.016 0.042"
-          );
-          eyeWL.setAttribute("color", "#F5F1EB");
-          eyeWL.setAttribute("material", eyeWhiteMat);
-          var eyeWR = document.createElement("a-sphere");
-          eyeWR.setAttribute("radius", "0.009");
-          eyeWR.setAttribute(
-            "position",
-            "-0.031 0.016 0.042"
-          );
-          eyeWR.setAttribute("color", "#F5F1EB");
-          eyeWR.setAttribute("material", eyeWhiteMat);
-
-          var pupMat =
-            "shader: standard; roughness: 0.42; metalness: 0";
-          var pupilL = document.createElement("a-sphere");
-          pupilL.setAttribute("radius", "0.0044");
-          pupilL.setAttribute(
-            "position",
-            "0.033 0.016 0.047"
-          );
-          pupilL.setAttribute("color", "#263238");
-          pupilL.setAttribute("material", pupMat);
-          var pupilR = document.createElement("a-sphere");
-          pupilR.setAttribute("radius", "0.0044");
-          pupilR.setAttribute(
-            "position",
-            "-0.033 0.016 0.047"
-          );
-          pupilR.setAttribute("color", "#263238");
-          pupilR.setAttribute("material", pupMat);
-
-          var snout = document.createElement("a-box");
-          snout.setAttribute(
-            "position",
-            "0.002 -0.012 0.044"
-          );
-          snout.setAttribute("width", "0.064");
-          snout.setAttribute("height", "0.042");
-          snout.setAttribute("depth", "0.076");
-          snout.setAttribute("color", "#C79A88");
-          snout.setAttribute("material", cowMatPasture);
-
-          var nostrilMat =
-            "shader: standard; roughness: 0.62; metalness: 0";
-          var nostrilL = document.createElement("a-sphere");
-          nostrilL.setAttribute("radius", "0.0074");
-          nostrilL.setAttribute(
-            "position",
-            "0.0145 -0.02 0.08"
-          );
-          nostrilL.setAttribute("color", "#221A16");
-          nostrilL.setAttribute("material", nostrilMat);
-          var nostrilR = document.createElement("a-sphere");
-          nostrilR.setAttribute("radius", "0.0074");
-          nostrilR.setAttribute(
-            "position",
-            "-0.0105 -0.02 0.08"
-          );
-          nostrilR.setAttribute("color", "#221A16");
-          nostrilR.setAttribute("material", nostrilMat);
-
-          headGrp.appendChild(headSpr);
-          headGrp.appendChild(headPatch);
-          headGrp.appendChild(earL);
-          headGrp.appendChild(earR);
-          headGrp.appendChild(eyeWL);
-          headGrp.appendChild(eyeWR);
-          headGrp.appendChild(pupilL);
-          headGrp.appendChild(pupilR);
-          headGrp.appendChild(snout);
-          headGrp.appendChild(nostrilL);
-          headGrp.appendChild(nostrilR);
-
-          var hornL = document.createElement("a-cone");
-          hornL.setAttribute(
-            "position",
-            "0.05 0.178 0.118"
-          );
-          hornL.setAttribute(
-            "rotation",
-            "-12 35 26"
-          );
-          hornL.setAttribute("radius-bottom", "0.012");
-          hornL.setAttribute("radius-top", "0.004");
-          hornL.setAttribute("height", "0.05");
-          hornL.setAttribute("color", "#BDBDBD");
-          hornL.setAttribute(
-            "material",
-            cowMatPasture + "; roughness: 0.55"
-          );
-
-          var hornR = document.createElement("a-cone");
-          hornR.setAttribute(
-            "position",
-            "-0.05 0.178 0.118"
-          );
-          hornR.setAttribute(
-            "rotation",
-            "-12 -35 -26"
-          );
-          hornR.setAttribute("radius-bottom", "0.012");
-          hornR.setAttribute("radius-top", "0.004");
-          hornR.setAttribute("height", "0.05");
-          hornR.setAttribute("color", "#BDBDBD");
-          hornR.setAttribute(
-            "material",
-            cowMatPasture + "; roughness: 0.55"
-          );
-
-          var tailRoot = document.createElement("a-entity");
-          tailRoot.setAttribute("class", "cow-tail");
-          tailRoot.setAttribute("position", "0 0.071 -0.119");
-          var tail = document.createElement("a-cylinder");
-          tail.setAttribute("position", "0 -0.018 -0.034");
-          tail.setAttribute("rotation", "28 0 0");
-          tail.setAttribute("radius", "0.0065");
-          tail.setAttribute("height", "0.09");
-          tail.setAttribute("color", "#6F5643");
-          tail.setAttribute("material", cowMatPasture);
-          var tailTuft = document.createElement("a-sphere");
-          tailTuft.setAttribute("class", "cow-tail-tuft");
-          tailTuft.setAttribute("position", "0 -0.04 -0.07");
-          tailTuft.setAttribute("radius", "0.018");
-          tailTuft.setAttribute("scale", "0.7 1.05 0.75");
-          tailTuft.setAttribute("color", "#2F241E");
-          tailTuft.setAttribute("material", cowMatPasture);
-          tailRoot.appendChild(tail);
-          tailRoot.appendChild(tailTuft);
-
-          var udder = document.createElement("a-sphere");
-          udder.setAttribute("position", "0 0.026 0.02");
-          udder.setAttribute("radius", "0.026");
-          udder.setAttribute("scale", "1.15 0.58 0.82");
-          udder.setAttribute("color", "#D9A0A6");
-          udder.setAttribute("material", cowMatPasture);
-          var teatL = document.createElement("a-cylinder");
-          teatL.setAttribute("position", "0.012 0.008 0.027");
-          teatL.setAttribute("radius", "0.0038");
-          teatL.setAttribute("height", "0.018");
-          teatL.setAttribute("color", "#C9858F");
-          teatL.setAttribute("material", cowMatPasture);
-          var teatR = document.createElement("a-cylinder");
-          teatR.setAttribute("position", "-0.012 0.008 0.027");
-          teatR.setAttribute("radius", "0.0038");
-          teatR.setAttribute("height", "0.018");
-          teatR.setAttribute("color", "#C9858F");
-          teatR.setAttribute("material", cowMatPasture);
-
-          cowScale.appendChild(torso);
-          cowScale.appendChild(belly);
-          cowScale.appendChild(headGrp);
-          cowScale.appendChild(hornL);
-          cowScale.appendChild(hornR);
-          cowScale.appendChild(tailRoot);
-          cowScale.appendChild(udder);
-          cowScale.appendChild(teatL);
-          cowScale.appendChild(teatR);
-          cowScale.appendChild(
-            cowLeg(0.048, 0.025, -0.11, "cow-leg-fl", cowMatPasture)
-          );
-          cowScale.appendChild(
-            cowLeg(-0.048, 0.025, -0.11, "cow-leg-fr", cowMatPasture)
-          );
-          cowScale.appendChild(
-            cowLeg(0.05, 0.025, 0.124, "cow-leg-bl", cowMatPasture)
-          );
-          cowScale.appendChild(
-            cowLeg(-0.05, 0.025, 0.124, "cow-leg-br", cowMatPasture)
-          );
-
-          anchor.appendChild(cowScale);
-          worldRoot.appendChild(anchor);
-
-          var surfLiftCow = 0.12;
-          placeYUpEntityOnPlanet(
-            anchor,
-            pastureNorm,
-            surfLiftCow
-          );
-
-          anchor.setAttribute("globe-cow-graze", {
-            wanderId: 617,
-            speed: 0.072,
-            surfaceLift: surfLiftCow
-          });
-        }
+        /* Exhibition live-cam: cow code removed. */
 
         function createVegetableGardenInClearing(gNorm, chickenDefs, roamOutsideX, roamOutsideZ) {
           var vegRoot = document.createElement("a-entity");
@@ -8148,64 +7429,6 @@
           placed.push({ longitude: longitude, latitude: latitude });
         }
 
-        /*
-         * Uniform random passes often skip the **wedge** between the river no-tree band and the
-         * campfire — bare planet reads as a flat green patch. Bias extra samples along that arc.
-         */
-        {
-          var fillTry = 0;
-          var fillPlaced = 0;
-          while (fillPlaced < 14 && fillTry < 750) {
-            fillTry++;
-            var lo =
-              campfireLongitude +
-              (random() - 0.5) * 0.88;
-            lo = normalizeLonRad(lo);
-            var sp = riverLatitude(lo);
-            var la = sp + 0.122 + random() * 0.31;
-            la = THREE.MathUtils.clamp(la, -1.35, 1.38);
-
-            var tooFill = false;
-            var pj;
-            for (pj = 0; pj < placed.length; pj++) {
-              var dLg = Math.abs(lo - placed[pj].longitude);
-              dLg = Math.min(dLg, Math.PI * 2 - dLg);
-              var dLt = la - placed[pj].latitude;
-              if (dLg * dLg + dLt * dLt < 0.0185) {
-                tooFill = true;
-                break;
-              }
-            }
-            if (tooFill) continue;
-
-            var cosLf = Math.cos(la);
-            var nFill = new THREE.Vector3(
-              Math.sin(lo) * cosLf,
-              Math.sin(la),
-              Math.cos(lo) * cosLf
-            ).normalize();
-
-            if (isNearRiver(lo, la, 0.038)) continue;
-            if (isNearHouse(lo, la)) continue;
-            if (isNearMountain(lo, la)) continue;
-            if (isNearSign(lo, la)) continue;
-            if (isInHouseSignNoTreeZone(lo, la)) continue;
-            if (isNearUmbrellaChair(lo, la)) continue;
-            if (isNearWoodenBridge(lo, la)) continue;
-            if (isNearCampfire(lo, la)) continue;
-            if (inVegetableGardenClearing(lo, la)) continue;
-
-            var fillTreeScale = 1.12 + random() * 0.48;
-            createTree(
-              nFill,
-              fillTreeScale,
-              isFrontHouseRiverbankNoTreeZone(lo, la)
-            );
-            placed.push({ longitude: lo, latitude: la });
-            fillPlaced++;
-          }
-        }
-
         var chickenSideLon = houseLongitude + 0.58;
         var chickenSideLat = houseLatitude + 0.035;
         var chickenSideCosLat = Math.cos(chickenSideLat);
@@ -8240,7 +7463,7 @@
           0.44,
           0.26
         );
-        createGlobePastureCow();
+        /* Exhibition live-cam: cow removed. */
       });
     </script>
     <script>
@@ -8610,10 +7833,6 @@
         <a-entity id="flowers"></a-entity>
         <a-entity id="vegetableGarden"></a-entity>
         <a-entity id="trees"></a-entity>
-        <a-entity id="mountains"></a-entity>
-
-        <!-- Rim clouds around mountain only (no summit storm bank or rain). -->
-        <a-entity river-mountain-weather></a-entity>
 
         <!-- Night-only helicopter searchlight: uneven patrol, not a perfect circle. -->
         <a-entity id="nightHelicopter" visible="false" night-helicopter-search="radius: 14.2; speed: 0.18; height: 3.4" scale="2.85 2.85 2.85">
@@ -8694,55 +7913,6 @@
           <a-cone position="-0.045 -0.16 0.02" radius-bottom="0.028" radius-top="0" height="0.09" rotation="-55 0 -25" color="#D9A620" material="shader: standard; roughness: 0.5; metalness: 0.12"></a-cone>
           <a-cone position="0.045 -0.16 0.02" radius-bottom="0.028" radius-top="0" height="0.09" rotation="-55 0 25" color="#D9A620" material="shader: standard; roughness: 0.5; metalness: 0.12"></a-cone>
           <a-cone position="0 0 0.36" radius-bottom="0.19" radius-top="0.02" height="0.38" rotation="-90 0 0" color="#4A332B"></a-cone>
-        </a-entity>
-
-        <!-- Eagle thermalling above mountain peak — uneven loop + glide (mountain-eagle-orbit) -->
-        <a-entity
-          id="eagle"
-          mountain-eagle-orbit="longitude: 3.621593; latitude: -0.805; hoverLift: 1.58; pathScale: 2.18; liftBias: 0.28; hubBiasEast: -1.12; hubBiasNorth: 0.84"
-          scale="1.05 1.05 1.05">
-          <!-- Body: broad chest, slightly tapered aft -->
-          <a-sphere position="0 -0.025 0.035" radius="0.23" scale="0.8 0.54 1.16" color="#3A2E26" material="shader: standard; roughness: 0.88; metalness: 0"></a-sphere>
-          <a-sphere position="0 -0.02 -0.08" radius="0.18" scale="0.65 0.42 0.72" color="#332820" material="shader: standard; roughness: 0.9; metalness: 0"></a-sphere>
-
-          <!-- Tail: pale wedge + darker band (raptor tail read) -->
-          <a-cone position="0 -0.03 0.38" radius-bottom="0.2" radius-top="0.02" height="0.36" rotation="-90 0 0" color="#CEC9C1" material="shader: standard; roughness: 0.92; metalness: 0"></a-cone>
-          <a-cone position="0 -0.05 0.36" radius-bottom="0.13" radius-top="0.02" height="0.26" rotation="-96 0 0" color="#2E2520" material="shader: standard; roughness: 0.9; metalness: 0"></a-cone>
-
-          <!-- Wings: single panel (same layout as globe bird) -->
-          <a-entity
-            position="-0.22 0.02 0"
-            animation__flap="property: rotation; from: 0 0 22; to: 0 0 72; dur: 1120; dir: alternate; easing: easeInOutSine; loop: true">
-            <a-box position="-0.36 0 0" width="0.78" height="0.045" depth="0.28" color="#4A3B32" material="shader: standard; roughness: 0.9; metalness: 0"></a-box>
-          </a-entity>
-          <a-entity
-            position="0.22 0.02 0"
-            animation__flap="property: rotation; from: 0 0 -22; to: 0 0 -72; dur: 1120; dir: alternate; easing: easeInOutSine; loop: true">
-            <a-box position="0.36 0 0" width="0.78" height="0.045" depth="0.28" color="#4A3B32" material="shader: standard; roughness: 0.9; metalness: 0"></a-box>
-          </a-entity>
-
-          <!-- Head (same brown as main body) -->
-          <a-sphere position="0 0.095 -0.31" radius="0.132" scale="0.92 0.85 1.02" color="#3A2E26" material="shader: standard; roughness: 0.88; metalness: 0"></a-sphere>
-          <!-- Crown / nape: slightly lighter accent, softened -->
-          <a-sphere position="0 0.158 -0.33" radius="0.048" scale="1.35 0.42 1.1" color="#BBB5AA" material="shader: standard; roughness: 0.88; metalness: 0"></a-sphere>
-
-          <!-- Heavy brow -->
-          <a-box position="0 0.133 -0.398" width="0.16" height="0.026" depth="0.055" rotation="14 0 0" color="#14110f" material="shader: standard; roughness: 0.75; metalness: 0"></a-box>
-
-          <!-- Yellow beak -->
-          <a-cone position="0 0.058 -0.485" radius-bottom="0.052" radius-top="0" height="0.15" rotation="90 0 0" color="#E8B319" material="shader: standard; roughness: 0.45; metalness: 0.08"></a-cone>
-
-          <!-- Eyes: iris ring + pupil + forward highlights so they read at distance -->
-          <a-sphere position="-0.056 0.108 -0.39" radius="0.021" color="#6E5C51" material="shader: standard; roughness: 0.66; metalness: 0"></a-sphere>
-          <a-sphere position="0.056 0.108 -0.39" radius="0.021" color="#6E5C51" material="shader: standard; roughness: 0.66; metalness: 0"></a-sphere>
-          <a-sphere position="-0.056 0.108 -0.394" radius="0.0175" color="#151515" material="shader: standard; roughness: 0.32; metalness: 0"></a-sphere>
-          <a-sphere position="0.056 0.108 -0.394" radius="0.0175" color="#151515" material="shader: standard; roughness: 0.32; metalness: 0"></a-sphere>
-          <a-sphere position="-0.053 0.112 -0.406" radius="0.006" color="#E8E8E6" material="shader: standard; roughness: 0.28; metalness: 0"></a-sphere>
-          <a-sphere position="0.059 0.112 -0.406" radius="0.006" color="#E8E8E6" material="shader: standard; roughness: 0.28; metalness: 0"></a-sphere>
-
-          <!-- Talon hints -->
-          <a-cone position="-0.045 -0.16 0.02" radius-bottom="0.028" radius-top="0" height="0.09" rotation="-55 0 -25" color="#D9A620" material="shader: standard; roughness: 0.5; metalness: 0.12"></a-cone>
-          <a-cone position="0.045 -0.16 0.02" radius-bottom="0.028" radius-top="0" height="0.09" rotation="-55 0 25" color="#D9A620" material="shader: standard; roughness: 0.5; metalness: 0.12"></a-cone>
         </a-entity>
 
         <!-- Pink butterfly staying close to the house -->
