@@ -206,18 +206,18 @@
       }
 
       .live-cam-information-button.is-jiggling:not(.is-playing):not(:hover):not(.is-hovering) {
-        animation: infoButtonJiggle 640ms ease-in-out 1;
+        animation: infoButtonJiggle 720ms ease-in-out 1;
       }
 
       @keyframes infoButtonJiggle {
         0%,
         100% { transform: var(--info-base-transform); }
-        13% { transform: var(--info-base-transform) rotate(4.2deg); }
-        26% { transform: var(--info-base-transform) rotate(-4.2deg); }
-        39% { transform: var(--info-base-transform) rotate(3.2deg); }
-        52% { transform: var(--info-base-transform) rotate(-2.6deg); }
-        66% { transform: var(--info-base-transform) rotate(1.8deg); }
-        82% { transform: var(--info-base-transform) rotate(-0.9deg); }
+        13% { transform: var(--info-base-transform) rotate(5.2deg); }
+        26% { transform: var(--info-base-transform) rotate(-5.2deg); }
+        39% { transform: var(--info-base-transform) rotate(4deg); }
+        52% { transform: var(--info-base-transform) rotate(-3.2deg); }
+        66% { transform: var(--info-base-transform) rotate(2.2deg); }
+        82% { transform: var(--info-base-transform) rotate(-1.15deg); }
       }
 
       .live-cam-information-button span {
@@ -1866,7 +1866,7 @@
           turnSoundVolume: { type: "number", default: 0.125 },
           breathingVolume: { type: "number", default: 0.07 },
           swooshVolume: { type: "number", default: 0.094 },
-          armSwooshVolume: { type: "number", default: 0.35 },
+          armSwooshVolume: { type: "number", default: 0.29 },
           hiVolume: { type: "number", default: 1.9 },
           armsVolume: { type: "number", default: 2.2 },
           informationVolume: { type: "number", default: 0.62 },
@@ -2263,7 +2263,8 @@ playBufferAt: function (buffer, position, volume, options) {
   source.stop(now + buffer.duration + (options.tail || 0.08));
 },
 playCharacterHi: function (position) {
-  this.playBufferAt(this.hiBuffer, position, this.data.hiVolume, {
+  var infoBoost = this.informationSource ? 2.6 : 1;
+  this.playBufferAt(this.hiBuffer, position, this.data.hiVolume * infoBoost, {
     refDistance: 0.7,
     maxDistance: 30,
     rolloffFactor: 2.15,
@@ -2272,7 +2273,8 @@ playCharacterHi: function (position) {
   });
 },
 playCharacterArms: function (position) {
-  this.playBufferAt(this.armsBuffer, position, this.data.armsVolume, {
+  var infoBoost = this.informationSource ? 3.0 : 1;
+  this.playBufferAt(this.armsBuffer, position, this.data.armsVolume * infoBoost, {
     refDistance: 0.8,
     maxDistance: 30,
     rolloffFactor: 2.05,
@@ -2330,7 +2332,11 @@ playBirdSqueak: function (position) {
           this.ensureAudioContext();
           this.playAudio(this.chicken);
           this.playAudio(this.breathing);
-          this.playAudio(this.helicopter);
+          if (this.helicopter) {
+            this.helicopter.volume = 0;
+            this.helicopter.muted = true;
+            this.playAudio(this.helicopter);
+          }
           this.mediaUnlocked = true;
           if (this.riverBuffer && !this.riverLoop) this.startSeamlessLoop("river");
           if (this.fireActive) {
@@ -2531,9 +2537,13 @@ playBirdSqueak: function (position) {
           var target = THREE.MathUtils.smoothstep(nightAmount, 0.03, 0.32) * this.data.helicopterVolume;
           this.heliCurrent += (target - this.heliCurrent) * (1 - Math.exp(-1.9 * dt));
           if (!this.helicopter) return;
-          this.helicopter.volume = Math.max(0, Math.min(1, this.heliCurrent));
-          if (this.heliCurrent > 0.002 || this.mediaUnlocked) {
+          var heliVolume = Math.max(0, Math.min(1, this.heliCurrent));
+          this.helicopter.volume = heliVolume;
+          if (this.mediaUnlocked && (target > 0.002 || heliVolume > 0.006)) {
+            this.helicopter.muted = false;
             this.playAudio(this.helicopter);
+          } else {
+            this.helicopter.muted = true;
           }
           if (!this.heliPanner) return;
           var heli = document.getElementById("nightHelicopter");
@@ -7947,7 +7957,7 @@ triggerReach: function () {
           this.lastSecond = -1;
           this.nextInfoJiggleAt = performance.now() + 5200 + Math.random() * 8200;
           this.infoJiggleStart = 0;
-          this.infoJiggleDuration = 640;
+          this.infoJiggleDuration = 720;
           this.infoHoverAmount = 0;
           this.el.object3D.position.set(0, 0, -this.depth);
 
@@ -8338,7 +8348,7 @@ triggerReach: function () {
             var hoverTarget = infoHovering ? 1 : 0;
             this.infoHoverAmount += (hoverTarget - (this.infoHoverAmount || 0)) * 0.18;
             var hover = this.infoHoverAmount || 0;
-            var rot = (1 - hover) * wave * THREE.MathUtils.degToRad(-4.2) + hover * THREE.MathUtils.degToRad(8);
+            var rot = (1 - hover) * wave * THREE.MathUtils.degToRad(-5.2) + hover * THREE.MathUtils.degToRad(8);
             var scaleBoost = 1 + hover * 0.32;
             this.infoEllipse.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.002");
             this.infoText.setAttribute("position", this.infoTextBaseX + " " + this.infoTextBaseY + " 0.004");
@@ -8654,7 +8664,7 @@ triggerReach: function () {
                 setTimeout(function () {
                   liveCamInformation.classList.remove("is-jiggling");
                   scheduleInformationJiggle();
-                }, 700);
+                }, 780);
               } else {
                 scheduleInformationJiggle();
               }
