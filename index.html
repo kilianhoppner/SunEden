@@ -8,7 +8,7 @@
     <style>
       @font-face {
         font-family: "ABCDiatypeRoundedEdu";
-        src: url("./ABCDiatypeRoundedEdu-Light.otf") format("opentype");
+        src: url("./typefaces/ABCDiatypeRoundedEdu-Light.otf") format("opentype");
         font-weight: 300;
         font-style: normal;
         font-display: swap;
@@ -16,11 +16,19 @@
 
       @font-face {
         font-family: "ChicagoKare";
-        src: url("./ChicagoKare-Regular.otf") format("opentype");
+        src: url("./typefaces/ChicagoKare-Regular.otf") format("opentype");
         font-weight: 400;
         font-style: normal;
         font-display: swap;
       }
+      @font-face {
+        font-family: "ABCDiatypeRoundedEduRegular";
+        src: url("./typefaces/ABCDiatypeRoundedEdu-Regular.otf") format("opentype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+
 
       html,
       body {
@@ -90,6 +98,12 @@
         transform: translateX(-50%);
         color: #111111;
         font-family: "ABCDiatypeRoundedEdu", Arial, sans-serif;
+        font-synthesis: none;
+        font-weight: 300;
+        text-shadow: none;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-text-stroke: 0 transparent;
         font-size: clamp(32px, 3.18vmin, 55px);
         line-height: 1;
         letter-spacing: 0;
@@ -120,12 +134,97 @@
         }
       }
 
+
+      .live-cam-information-button {
+        appearance: none;
+        position: absolute;
+        top: calc(clamp(32px, 4.55vmin, 53px) - 3px);
+        left: clamp(125px, 10vw, 190px);
+        z-index: 2;
+        width: clamp(218px, 16.8vmin, 326px);
+        height: clamp(48px, 4.18vmin, 72px);
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: #FFF200;
+        color: #111111;
+        cursor: pointer;
+        --info-base-transform: translateX(0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "ABCDiatypeRoundedEduRegular", "ABCDiatypeRoundedEdu", Arial, sans-serif;
+        font-synthesis: none;
+        font-weight: 400;
+        text-shadow: none;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-text-stroke: 0 transparent;
+        font-size: clamp(37px, 3.42vmin, 60px);
+        line-height: 1;
+        letter-spacing: 0;
+        pointer-events: auto;
+        white-space: nowrap;
+        transform: var(--info-base-transform);
+        transform-origin: center center;
+        transition: transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+
+      .live-cam-information-button:hover,
+      .live-cam-information-button.is-hovering {
+        transform: var(--info-base-transform) scale(1.065) rotate(-4deg);
+      }
+
+      .live-cam-information-button.is-playing:not(:hover):not(.is-hovering) {
+        transform: var(--info-base-transform);
+      }
+
+      .live-cam-information-button {
+        overflow: hidden;
+      }
+
+      .live-cam-information-button.is-jiggling:not(.is-playing):not(:hover):not(.is-hovering) {
+        animation: infoButtonJiggle 640ms ease-in-out 1;
+      }
+
+      @keyframes infoButtonJiggle {
+        0%,
+        100% {
+          transform: var(--info-base-transform);
+        }
+        13% {
+          transform: var(--info-base-transform) rotate(4.2deg);
+        }
+        26% {
+          transform: var(--info-base-transform) rotate(-4.2deg);
+        }
+        39% {
+          transform: var(--info-base-transform) rotate(3.2deg);
+        }
+        52% {
+          transform: var(--info-base-transform) rotate(-2.6deg);
+        }
+        66% {
+          transform: var(--info-base-transform) rotate(1.8deg);
+        }
+        82% {
+          transform: var(--info-base-transform) rotate(-0.9deg);
+        }
+      }
+
+      .live-cam-information-button span {
+        display: block;
+        transform: translateY(calc(0.045em - 1px));
+      }
+
       .live-cam-control-group {
         position: absolute;
         top: calc(clamp(32px, 4.55vmin, 53px) + 2px);
-        right: clamp(118px, 9.45vw, 180px);
-        display: block;
-        width: max-content;
+        right: clamp(125px, 10vw, 190px);
+        display: flex;
+        align-items: stretch;
+        gap: clamp(28px, 1.95vmin, 36px);
         pointer-events: none;
       }
 
@@ -134,48 +233,121 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: clamp(29px, 2.8vmin, 46px);
+        min-height: clamp(30px, 2.92vmin, 48px);
         padding: 0 clamp(4px, 0.35vmin, 6px);
         color: #FFFFFF;
         background: #949494;
         font-family: "ChicagoKare", "Courier New", monospace;
-        font-size: clamp(28px, 2.8vmin, 50px);
+        font-size: clamp(29px, 2.92vmin, 52px);
         line-height: 1;
         letter-spacing: 1px;
         white-space: nowrap;
       }
 
+      .live-cam-zoom-controls {
+        position: static;
+        display: flex;
+        gap: clamp(7px, 0.7vmin, 12px);
+        pointer-events: auto;
+      }
+
+      .live-cam-zoom-button {
+        appearance: none;
+        border: 0;
+        border-radius: 0;
+        width: clamp(30px, 2.92vmin, 48px);
+        min-width: clamp(30px, 2.92vmin, 48px);
+        height: clamp(30px, 2.92vmin, 48px);
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        color: #FFFFFF;
+        background: #949494;
+        font-size: 0;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .live-cam-zoom-button span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+      }
+
+      .live-cam-zoom-button::before,
+      .live-cam-zoom-button.live-cam-zoom-in::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        background: #FFFFFF;
+        transform: translate(-50%, -50%);
+      }
+
+      .live-cam-zoom-button::before {
+        width: 54%;
+        height: 11%;
+      }
+
+      .live-cam-zoom-button.live-cam-zoom-in::after {
+        width: 11%;
+        height: 54%;
+      }
+
       @media (max-width: 760px) {
+        .live-cam-information-button {
+          top: auto;
+          bottom: calc(clamp(32px, 4.55vmin, 53px) + 2px + clamp(10px, 1.4vmin, 20px));
+          left: 50%;
+          --info-base-transform: translateX(-50%);
+          width: clamp(178px, 43vw, 268px);
+          height: clamp(42px, 9.6vw, 64px);
+          font-size: clamp(31px, 7.45vw, 45px);
+        }
+
         .live-cam-control-group {
           top: calc(clamp(32px, 4.55vmin, 53px) + 2px + clamp(10px, 1.4vmin, 20px));
           right: 0;
           left: 0;
           display: block;
-          width: auto;
-          height: clamp(27px, 2.54vmin, 42px);
+          height: clamp(28px, 2.64vmin, 43px);
           gap: 0;
           transform: none;
         }
 
         .live-cam-status {
-          top: calc(clamp(32px, 4.55vmin, 53px) + clamp(10px, 1.4vmin, 20px) + clamp(27px, 2.54vmin, 42px) + clamp(9px, 1.08vmin, 14px));
-          gap: clamp(9.5px, 1.1vmin, 15px);
-          font-size: clamp(29px, 2.84vmin, 49px);
+          top: calc(clamp(32px, 4.55vmin, 53px) + clamp(10px, 1.4vmin, 20px) + clamp(28px, 2.64vmin, 43px) + clamp(9px, 1.08vmin, 14px));
+          gap: clamp(10px, 1.16vmin, 16px);
+          font-size: clamp(30px, 2.96vmin, 51px);
         }
 
         .live-cam-dot {
-          width: clamp(28px, 2.46vmin, 44px);
-          height: clamp(28px, 2.46vmin, 44px);
+          width: clamp(29px, 2.56vmin, 46px);
+          height: clamp(29px, 2.56vmin, 46px);
         }
 
         .live-cam-time {
           position: absolute;
           left: 50%;
           top: 0;
-          min-height: clamp(27px, 2.54vmin, 42px);
+          min-height: clamp(28px, 2.64vmin, 43px);
           padding: 0 clamp(4px, 0.34vmin, 6px);
-          font-size: clamp(26px, 2.54vmin, 46px);
+          font-size: clamp(27px, 2.64vmin, 48px);
           transform: translateX(-50%);
+        }
+
+        .live-cam-zoom-controls {
+          display: none;
+        }
+
+        .live-cam-zoom-button {
+          width: clamp(28px, 2.64vmin, 43px);
+          min-width: clamp(28px, 2.64vmin, 43px);
+          height: clamp(28px, 2.64vmin, 43px);
         }
 
         .live-cam-corner {
@@ -1350,6 +1522,11 @@
           window.removeEventListener("pointercancel", this.onPointerUp);
         },
         onPointerDown: function (event) {
+          if (this.isPointerOnZoomControl(event)) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
           this.dragging = true;
           this.returning = false;
           this.lastInteractionTime = performance.now();
@@ -1377,6 +1554,23 @@
           this.lastInteractionTime = performance.now();
           this.applyRotation();
           event.preventDefault();
+        },
+        isPointerOnZoomControl: function (event) {
+          var scene = this.el.sceneEl;
+          if (!scene || !scene.is || !scene.is("vr-mode")) return false;
+          var buttons = document.querySelectorAll(".live-cam-zoom-button, .live-cam-information-button");
+          for (var i = 0; i < buttons.length; i++) {
+            var rect = buttons[i].getBoundingClientRect();
+            if (
+              event.clientX >= rect.left &&
+              event.clientX <= rect.right &&
+              event.clientY >= rect.top &&
+              event.clientY <= rect.bottom
+            ) {
+              return true;
+            }
+          }
+          return false;
         },
         onPointerUp: function (event) {
           this.dragging = false;
@@ -1451,24 +1645,226 @@
           this.el.object3D.quaternion.copy(this.nextQuat);
         }
       });
+
+      AFRAME.registerComponent("live-cam-zoom", {
+        schema: {
+          minFov: { type: "number", default: 50 },
+          maxFov: { type: "number", default: 90 },
+          step: { type: "number", default: 8 },
+          speed: { type: "number", default: 9 },
+          returnIdleMs: { type: "number", default: 60000 },
+          returnSpeed: { type: "number", default: 6 }
+        },
+        init: function () {
+          var camera = this.el.getAttribute("camera") || {};
+          this.defaultFov = camera.fov || 70;
+          this.currentFov = this.defaultFov;
+          this.targetFov = this.currentFov;
+          this.zoomDirection = 0;
+          this.lastZoomInteractionTime = performance.now();
+          this.onZoomIn = this.startZoom.bind(this, -1);
+          this.onZoomOut = this.startZoom.bind(this, 1);
+          this.onZoomStop = this.stopZoom.bind(this);
+          this.onFullscreenPointerDown = this.onFullscreenPointerDown.bind(this);
+          this.onTouchStart = this.onTouchStart.bind(this);
+          this.onTouchMove = this.onTouchMove.bind(this);
+          this.onTouchEnd = this.onTouchEnd.bind(this);
+          this.pinching = false;
+          this.pinchStartDistance = 0;
+          this.pinchStartFov = this.currentFov;
+          this.pinchTargetFov = this.currentFov;
+          this.onControlPointer = function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+          };
+        },
+        play: function () {
+          this.plusButton = document.getElementById("liveCamZoomIn");
+          this.minusButton = document.getElementById("liveCamZoomOut");
+          this.bindButton(this.plusButton, this.onZoomIn);
+          this.bindButton(this.minusButton, this.onZoomOut);
+          window.addEventListener("pointerdown", this.onFullscreenPointerDown, true);
+          window.addEventListener("pointerup", this.onZoomStop, true);
+          window.addEventListener("pointercancel", this.onZoomStop, true);
+          var canvas = this.el.sceneEl && this.el.sceneEl.canvas;
+          if (canvas) {
+            canvas.addEventListener("touchstart", this.onTouchStart, { passive: false });
+            canvas.addEventListener("touchmove", this.onTouchMove, { passive: false });
+            canvas.addEventListener("touchend", this.onTouchEnd, { passive: false });
+            canvas.addEventListener("touchcancel", this.onTouchEnd, { passive: false });
+            this.touchCanvas = canvas;
+          }
+        },
+        pause: function () {
+          this.unbindButton(this.plusButton, this.onZoomIn);
+          this.unbindButton(this.minusButton, this.onZoomOut);
+          window.removeEventListener("pointerdown", this.onFullscreenPointerDown, true);
+          window.removeEventListener("pointerup", this.onZoomStop, true);
+          window.removeEventListener("pointercancel", this.onZoomStop, true);
+          if (this.touchCanvas) {
+            this.touchCanvas.removeEventListener("touchstart", this.onTouchStart);
+            this.touchCanvas.removeEventListener("touchmove", this.onTouchMove);
+            this.touchCanvas.removeEventListener("touchend", this.onTouchEnd);
+            this.touchCanvas.removeEventListener("touchcancel", this.onTouchEnd);
+            this.touchCanvas = null;
+          }
+        },
+        bindButton: function (button, handler) {
+          if (!button) return;
+          button.addEventListener("pointerdown", handler);
+          button.addEventListener("pointerup", this.onZoomStop);
+          button.addEventListener("pointercancel", this.onZoomStop);
+        },
+        unbindButton: function (button, handler) {
+          if (!button) return;
+          button.removeEventListener("pointerdown", handler);
+          button.removeEventListener("pointerup", this.onZoomStop);
+          button.removeEventListener("pointercancel", this.onZoomStop);
+        },
+        buttonContainsPointer: function (button, event) {
+          if (!button || window.getComputedStyle(button).display === "none") return false;
+          var rect = button.getBoundingClientRect();
+          return (
+            event.clientX >= rect.left &&
+            event.clientX <= rect.right &&
+            event.clientY >= rect.top &&
+            event.clientY <= rect.bottom
+          );
+        },
+        onFullscreenPointerDown: function (event) {
+          var scene = this.el.sceneEl;
+          if (!scene || !scene.is || !scene.is("vr-mode")) return;
+          if (this.buttonContainsPointer(this.plusButton, event)) {
+            this.startZoom(-1, event);
+          } else if (this.buttonContainsPointer(this.minusButton, event)) {
+            this.startZoom(1, event);
+          }
+        },
+        isMobileZoomLayout: function () {
+          return window.matchMedia && window.matchMedia("(max-width: 760px)").matches;
+        },
+        touchDistance: function (touches) {
+          var dx = touches[0].clientX - touches[1].clientX;
+          var dy = touches[0].clientY - touches[1].clientY;
+          return Math.sqrt(dx * dx + dy * dy);
+        },
+        onTouchStart: function (event) {
+          if (!this.isMobileZoomLayout() || event.touches.length !== 2) return;
+          this.pinching = true;
+          this.zoomDirection = 0;
+          var dragLook = this.el.components && this.el.components["curved-world-drag-look"];
+          if (dragLook) dragLook.dragging = false;
+          this.pinchStartDistance = Math.max(1, this.touchDistance(event.touches));
+          this.pinchStartFov = this.currentFov;
+          this.pinchTargetFov = this.currentFov;
+          this.lastZoomInteractionTime = performance.now();
+          event.preventDefault();
+          event.stopPropagation();
+        },
+        onTouchMove: function (event) {
+          if (!this.pinching || event.touches.length !== 2) return;
+          var distance = this.touchDistance(event.touches);
+          var delta = distance - this.pinchStartDistance;
+          this.pinchTargetFov = THREE.MathUtils.clamp(
+            this.pinchStartFov - delta * 0.12,
+            this.data.minFov,
+            this.data.maxFov
+          );
+          this.lastZoomInteractionTime = performance.now();
+          event.preventDefault();
+          event.stopPropagation();
+        },
+        onTouchEnd: function (event) {
+          if (!this.pinching) return;
+          if (event.touches && event.touches.length >= 2) {
+            this.pinchStartDistance = Math.max(1, this.touchDistance(event.touches));
+            this.pinchStartFov = this.currentFov;
+            this.pinchTargetFov = this.currentFov;
+            return;
+          }
+          this.pinching = false;
+          this.lastZoomInteractionTime = performance.now();
+        },
+        startZoom: function (direction, event) {
+          if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          this.zoomDirection = direction;
+          this.lastZoomInteractionTime = performance.now();
+        },
+        stopZoom: function () {
+          if (this.zoomDirection) this.lastZoomInteractionTime = performance.now();
+          this.zoomDirection = 0;
+        },
+        applyFov: function () {
+          var cameraComponent = this.el.components && this.el.components.camera;
+          if (cameraComponent && cameraComponent.camera) {
+            cameraComponent.camera.fov = this.currentFov;
+            cameraComponent.camera.updateProjectionMatrix();
+          }
+          this.el.setAttribute("camera", "fov", this.currentFov);
+          var hud = document.getElementById("liveCamVrHud");
+          if (hud && hud.components && hud.components["live-cam-vr-hud"]) {
+            hud.components["live-cam-vr-hud"].updateLayout(true);
+          }
+        },
+        tick: function (_, deltaMs) {
+          var dt = Math.min((deltaMs || 16) / 1000, 0.06);
+          var nextFov = this.currentFov;
+          if (this.zoomDirection) {
+            nextFov = THREE.MathUtils.clamp(
+              this.currentFov + this.zoomDirection * this.data.speed * dt,
+              this.data.minFov,
+              this.data.maxFov
+            );
+          } else if (this.pinching) {
+            var maxStep = this.data.speed * 2.4 * dt;
+            var diff = this.pinchTargetFov - this.currentFov;
+            nextFov = Math.abs(diff) <= maxStep
+              ? this.pinchTargetFov
+              : this.currentFov + Math.sign(diff) * maxStep;
+          } else if (
+            Math.abs(this.currentFov - this.defaultFov) > 0.01 &&
+            performance.now() - this.lastZoomInteractionTime >= this.data.returnIdleMs
+          ) {
+            var returnDirection = this.defaultFov > this.currentFov ? 1 : -1;
+            nextFov = this.currentFov + returnDirection * this.data.returnSpeed * dt;
+            if (
+              (returnDirection > 0 && nextFov > this.defaultFov) ||
+              (returnDirection < 0 && nextFov < this.defaultFov)
+            ) {
+              nextFov = this.defaultFov;
+            }
+          } else {
+            return;
+          }
+          if (Math.abs(nextFov - this.currentFov) < 0.001) return;
+          this.currentFov = nextFov;
+          this.targetFov = nextFov;
+          this.applyFov();
+        }
+      });
+
       AFRAME.registerComponent("exhibition-audio", {
         schema: {
-          riverVolume: { type: "number", default: 0.14 },
-          chickenVolume: { type: "number", default: 0.12 },
-          chickenFireBoost: { type: "number", default: 0.1 },
+          riverVolume: { type: "number", default: 0.175 },
+          chickenVolume: { type: "number", default: 0.15 },
+          chickenFireBoost: { type: "number", default: 0.125 },
           fireIntroVolume: { type: "number", default: 0.34 },
-          fireBedVolume: { type: "number", default: 0.38 },
+          fireBedVolume: { type: "number", default: 0.475 },
           fireBedDelay: { type: "number", default: 2.4 },
-          helicopterVolume: { type: "number", default: 0.78 },
-          footstepVolume: { type: "number", default: 0.22 },
-          turnSoundVolume: { type: "number", default: 0.045 },
-          breathingVolume: { type: "number", default: 0.046 },
-          swooshVolume: { type: "number", default: 0.075 },
-          armSwooshVolume: { type: "number", default: 0.12 },
-          hiVolume: { type: "number", default: 0.86 },
-          armsVolume: { type: "number", default: 0.88 },
+          helicopterVolume: { type: "number", default: 0.98 },
+          footstepVolume: { type: "number", default: 0.55 },
+          turnSoundVolume: { type: "number", default: 0.125 },
+          breathingVolume: { type: "number", default: 0.07 },
+          swooshVolume: { type: "number", default: 0.094 },
+          armSwooshVolume: { type: "number", default: 0.35 },
+          hiVolume: { type: "number", default: 1.9 },
+          armsVolume: { type: "number", default: 2.2 },
+          informationVolume: { type: "number", default: 0.62 },
 
-          birdVolume: { type: "number", default: 0.44 },
+          birdVolume: { type: "number", default: 0.55 },
           fadeSpeed: { type: "number", default: 1.55 }
         },
         init: function () {
@@ -1501,6 +1897,10 @@
           this.hiBuffer = null;
           this.armsBuffer = null;
           this.birdBuffer = null;
+          this.sunedenBuffer = null;
+          this.pendingInformationSound = false;
+          this.informationSource = null;
+          this.informationGain = null;
           this.lastBirdNear = false;
           this.nextBirdSoundTime = 0;
           this.fireIntroSource = null;
@@ -1629,7 +2029,7 @@
         },
         loadAudioBuffers: function () {
           if (!this.audioContext || this.fireBuffersLoading) return;
-          if (this.fireIntroBuffer && this.fireBedBuffer && this.riverBuffer && this.hiBuffer && this.armsBuffer && this.birdBuffer) return;
+          if (this.fireIntroBuffer && this.fireBedBuffer && this.riverBuffer && this.hiBuffer && this.armsBuffer && this.birdBuffer && this.sunedenBuffer) return;
           var self = this;
           this.fireBuffersLoading = true;
           this.loadBuffer("audio/river.wav", function (buffer) {
@@ -1644,6 +2044,10 @@
           });
           this.loadBuffer("audio/bird.wav", function (buffer) {
             self.birdBuffer = buffer;
+          });
+          this.loadBuffer("audio/suneden.wav", function (buffer) {
+            self.sunedenBuffer = buffer;
+            if (self.pendingInformationSound) self.playInformationSound();
           });
           this.loadBuffer("audio/fire.wav", function (buffer) {
             self.fireIntroBuffer = buffer;
@@ -1704,7 +2108,7 @@
         },
         startSeamlessLoop: function (kind) {
           var ctx = this.ensureAudioContext();
-          if (!ctx || ctx.state !== "running") return;
+          if (!ctx || ctx.state !== "running") return false;
           var buffer = kind === "river" ? this.riverBuffer : this.fireBedBuffer;
           var outputGain = kind === "river" ? this.riverGain : this.fireBedGain;
           if (!buffer || !outputGain) return;
@@ -1760,6 +2164,66 @@
           if (!audio || !audio.paused) return;
           audio.play().catch(function () {});
         },
+setInformationButtonPlaying: function (playing) {
+  if (typeof window !== "undefined" && window.dispatchEvent) {
+    window.dispatchEvent(new CustomEvent("suneden-information-audio", { detail: { playing: !!playing } }));
+  }
+},
+stopInformationSound: function () {
+  this.pendingInformationSound = false;
+  if (this.informationGain && this.audioContext) {
+    try {
+      var now = this.audioContext.currentTime;
+      this.informationGain.gain.cancelScheduledValues(now);
+      this.informationGain.gain.setValueAtTime(Math.max(0.0001, this.informationGain.gain.value || 0.0001), now);
+      this.informationGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+    } catch (e) {}
+  }
+  if (this.informationSource) {
+    try { this.informationSource.stop((this.audioContext && this.audioContext.currentTime || 0) + 0.1); } catch (e) {}
+    this.informationSource = null;
+    this.informationGain = null;
+  }
+  this.setInformationButtonPlaying(false);
+  return false;
+},
+playInformationSound: function () {
+  var ctx = this.ensureAudioContext();
+  if (!ctx || ctx.state !== "running") return;
+  if (this.informationSource) {
+    return this.stopInformationSound();
+  }
+  if (!this.sunedenBuffer) {
+    this.pendingInformationSound = !this.pendingInformationSound;
+    this.loadAudioBuffers();
+    return false;
+  }
+  this.pendingInformationSound = false;
+  var now = ctx.currentTime;
+  var source = ctx.createBufferSource();
+  var gain = ctx.createGain();
+  var self = this;
+  source.buffer = this.sunedenBuffer;
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, this.data.informationVolume), now + 0.018);
+  gain.gain.setValueAtTime(Math.max(0.0002, this.data.informationVolume), now + Math.max(0.018, this.sunedenBuffer.duration - 0.08));
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + this.sunedenBuffer.duration + 0.03);
+  source.connect(gain).connect(ctx.destination);
+  source.onended = function () {
+    if (self.informationSource === source) {
+      self.informationSource = null;
+      self.informationGain = null;
+      self.setInformationButtonPlaying(false);
+    }
+    source.onended = null;
+  };
+  this.informationSource = source;
+  this.informationGain = gain;
+  this.setInformationButtonPlaying(true);
+  source.start(now);
+  source.stop(now + this.sunedenBuffer.duration + 0.1);
+  return true;
+},
 playBufferAt: function (buffer, position, volume, options) {
   var ctx = this.ensureAudioContext();
   if (!ctx || ctx.state !== "running" || !buffer) return;
@@ -4265,7 +4729,7 @@ triggerReach: function () {
           label.setAttribute("position", "0 1.43 0.06");
           label.setAttribute(
             "troika-text",
-            "value: SUN EDEN; align: center; baseline: middle; color: #115CAC; font: ./SunEden-Regular.otf; fontSize: 0.53; maxWidth: 3.05; anchorX: center; anchorY: center; letterSpacing: 0.01; outlineWidth: 0; outlineColor: #5a3418"
+            "value: SUN EDEN; align: center; baseline: middle; color: #115CAC; font: ./typefaces/SunEden-Regular.otf; fontSize: 0.53; maxWidth: 3.05; anchorX: center; anchorY: center; letterSpacing: 0.01; outlineWidth: 0; outlineColor: #5a3418"
           );
 
           var labelBack = document.createElement("a-entity");
@@ -4273,7 +4737,7 @@ triggerReach: function () {
           labelBack.setAttribute("rotation", "0 180 0");
           labelBack.setAttribute(
             "troika-text",
-            "value: SUN EDEN; align: center; baseline: middle; color: #115CAC; font: ./SunEden-Regular.otf; fontSize: 0.53; maxWidth: 3.05; anchorX: center; anchorY: center; letterSpacing: 0.01; outlineWidth: 0; outlineColor: #5a3418"
+            "value: SUN EDEN; align: center; baseline: middle; color: #115CAC; font: ./typefaces/SunEden-Regular.otf; fontSize: 0.53; maxWidth: 3.05; anchorX: center; anchorY: center; letterSpacing: 0.01; outlineWidth: 0; outlineColor: #5a3418"
           );
 
           signRoot.appendChild(postL);
@@ -7474,6 +7938,10 @@ triggerReach: function () {
           this.lastLayoutHeight = 0;
           this.lastFov = 0;
           this.lastSecond = -1;
+          this.nextInfoJiggleAt = performance.now() + 5200 + Math.random() * 8200;
+          this.infoJiggleStart = 0;
+          this.infoJiggleDuration = 640;
+          this.infoHoverAmount = 0;
           this.el.object3D.position.set(0, 0, -this.depth);
 
           this.corners = [];
@@ -7488,15 +7956,32 @@ triggerReach: function () {
           this.liveText = document.createElement("a-entity");
           this.liveText.setAttribute(
             "troika-text",
-            "value: live cam; font: ./ABCDiatypeRoundedEdu-Light.otf; color: #111111; anchor: left; baseline: middle"
+            "value: live cam; font: ./typefaces/ABCDiatypeRoundedEdu-Light.otf; color: #111111; anchor: left; baseline: middle"
           );
           this.el.appendChild(this.liveText);
 
+          this.infoEllipse = document.createElement("a-circle");
+          this.infoEllipse.setAttribute("geometry", "primitive: circle; radius: 0.5; segments: 128");
+          this.infoEllipse.setAttribute("material", "shader: flat; color: #FFF200; side: double");
+          this.el.appendChild(this.infoEllipse);
+
+          this.infoText = document.createElement("a-entity");
+          this.infoText.setAttribute(
+            "troika-text",
+            "value: information; font: ./typefaces/ABCDiatypeRoundedEdu-Regular.otf; color: #111111; anchor: center; baseline: middle"
+          );
+          this.el.appendChild(this.infoText);
+
           this.timeBox = this.makePlane("#949494");
+          this.zoomPlusBox = this.makePlane("#949494");
+          this.zoomMinusBox = this.makePlane("#949494");
+          this.zoomPlusHorizontal = this.makePlane("#FFFFFF");
+          this.zoomPlusVertical = this.makePlane("#FFFFFF");
+          this.zoomMinusHorizontal = this.makePlane("#FFFFFF");
           this.timeText = document.createElement("a-entity");
           this.timeText.setAttribute(
             "troika-text",
-            "value: --/--/----  --:--:--; font: ./ChicagoKare-Regular.otf; color: #FFFFFF; anchor: center; baseline: middle"
+            "value: --/--/----  --:--:--; font: ./typefaces/ChicagoKare-Regular.otf; color: #FFFFFF; anchor: center; baseline: middle"
           );
           this.el.appendChild(this.timeText);
 
@@ -7547,7 +8032,7 @@ triggerReach: function () {
               (this.timeFontSize || 0.04) +
               "; value: " +
               this.ukTimeString() +
-              "; font: ./ChicagoKare-Regular.otf; color: #FFFFFF; anchor: center; baseline: middle"
+              "; font: ./typefaces/ChicagoKare-Regular.otf; color: #FFFFFF; anchor: center; baseline: middle"
           );
         },
         setPlane: function (plane, x, y, w, h) {
@@ -7568,6 +8053,19 @@ triggerReach: function () {
             x: (x - screenW / 2) / screenW * viewW,
             y: (screenH / 2 - y) / screenH * viewH
           };
+        },
+        layoutZoomHudButton: function (button, box, horizontalBar, verticalBar, viewW, viewH, width, height) {
+          if (!button || !box || !horizontalBar) return;
+          var visible = window.getComputedStyle(button).display !== "none";
+          box.setAttribute("visible", visible);
+          horizontalBar.setAttribute("visible", visible);
+          if (verticalBar) verticalBar.setAttribute("visible", visible);
+          if (!visible) return;
+          var rect = button.getBoundingClientRect();
+          var hud = this.cssRectToHud(rect, viewW, viewH, width, height);
+          this.setPlane(box, hud.x, hud.y, hud.w, hud.h);
+          this.setPlane(horizontalBar, hud.x, hud.y, hud.w * 0.54, hud.h * 0.11);
+          if (verticalBar) this.setPlane(verticalBar, hud.x, hud.y, hud.w * 0.11, hud.h * 0.54);
         },
         updateLayout: function (force) {
           var width = window.innerWidth || 16;
@@ -7604,8 +8102,11 @@ triggerReach: function () {
           var cssDot = document.querySelector(".live-cam-dot");
           var cssLiveText = document.querySelector(".live-cam-status span:last-child");
           var cssStatus = document.querySelector(".live-cam-status");
+          var cssInfo = document.querySelector(".live-cam-information-button");
+          var cssInfoText = document.querySelector(".live-cam-information-button span");
           var cssTime = document.querySelector(".live-cam-time");
-          if (cssCorners[0] && cssCorners[1] && cssCorners[2] && cssCorners[3] && cssDot && cssLiveText && cssStatus && cssTime) {
+          var cssZoomButtons = document.querySelectorAll(".live-cam-zoom-button");
+          if (cssCorners[0] && cssCorners[1] && cssCorners[2] && cssCorners[3] && cssDot && cssLiveText && cssStatus && cssInfo && cssInfoText && cssTime) {
             var cornerIndex = 0;
             for (var ci = 0; ci < cssCorners.length; ci++) {
               var cEl = cssCorners[ci];
@@ -7667,7 +8168,38 @@ triggerReach: function () {
               "troika-text",
               "fontSize: " +
                 liveFontSize +
-                "; value: live cam; font: ./ABCDiatypeRoundedEdu-Light.otf; color: #111111; anchor: left; baseline: middle"
+                "; value: live cam; font: ./typefaces/ABCDiatypeRoundedEdu-Light.otf; color: #111111; anchor: left; baseline: middle"
+            );
+
+            var infoRect = cssInfo.getBoundingClientRect();
+            var infoHud = this.cssRectToHud(infoRect, viewW, viewH, width, height);
+            var infoTextRect = cssInfoText.getBoundingClientRect();
+            var infoTextPoint = this.cssPointToHud(
+              infoTextRect.left + infoTextRect.width / 2,
+              infoTextRect.top + infoTextRect.height / 2,
+              viewW,
+              viewH,
+              width,
+              height
+            );
+            var infoStyle = window.getComputedStyle(cssInfo);
+            var infoFontSize = (parseFloat(infoStyle.fontSize) || 34) / height * viewH;
+            this.infoBaseX = infoHud.x;
+            this.infoBaseY = infoHud.y;
+            this.infoTextBaseX = infoTextPoint.x;
+            this.infoTextBaseY = infoTextPoint.y - infoFontSize * 0.025;
+            this.infoEllipseZ = 0.002;
+            this.infoTextZ = 0.004;
+            this.infoEllipse.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.002");
+            this.infoScaleX = infoHud.w;
+            this.infoScaleY = infoHud.h;
+            this.infoEllipse.setAttribute("scale", this.infoScaleX + " " + this.infoScaleY + " 1");
+            this.infoText.setAttribute("position", this.infoTextBaseX + " " + this.infoTextBaseY + " 0.004");
+            this.infoText.setAttribute(
+              "troika-text",
+              "fontSize: " +
+                infoFontSize +
+                "; value: information; font: ./typefaces/ABCDiatypeRoundedEdu-Regular.otf; color: #111111; anchor: center; baseline: middle"
             );
 
             var timeRect = cssTime.getBoundingClientRect();
@@ -7683,8 +8215,10 @@ triggerReach: function () {
               "troika-text",
               "fontSize: " +
                 this.timeFontSize +
-                "; value: --/--/----  --:--:--; font: ./ChicagoKare-Regular.otf; color: #FFFFFF; anchor: center; baseline: middle"
+                "; value: --/--/----  --:--:--; font: ./typefaces/ChicagoKare-Regular.otf; color: #FFFFFF; anchor: center; baseline: middle"
             );
+            this.layoutZoomHudButton(cssZoomButtons[0], this.zoomPlusBox, this.zoomPlusHorizontal, this.zoomPlusVertical, viewW, viewH, width, height);
+            this.layoutZoomHudButton(cssZoomButtons[1], this.zoomMinusBox, this.zoomMinusHorizontal, null, viewW, viewH, width, height);
             return;
           }
 
@@ -7722,7 +8256,28 @@ triggerReach: function () {
             "troika-text",
             "fontSize: " +
               liveSize +
-              "; value: live cam; font: ./ABCDiatypeRoundedEdu-Light.otf; color: #111111; anchor: left; baseline: middle"
+              "; value: live cam; font: ./typefaces/ABCDiatypeRoundedEdu-Light.otf; color: #111111; anchor: left; baseline: middle"
+          );
+
+          var infoFallbackW = Math.max(corner * 2.65, liveSize * 5.75);
+          var infoFallbackH = Math.max(thick * 8, liveSize * 1.28);
+          var infoFallbackX = left + corner + pad * 0.78 + infoFallbackW / 2;
+          this.infoBaseX = infoFallbackX;
+          this.infoBaseY = statusY;
+          this.infoTextBaseX = infoFallbackX;
+          this.infoTextBaseY = statusY - liveSize * 0.025;
+          this.infoEllipseZ = 0.002;
+          this.infoTextZ = 0.004;
+          this.infoEllipse.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.002");
+          this.infoScaleX = infoFallbackW;
+          this.infoScaleY = infoFallbackH;
+          this.infoEllipse.setAttribute("scale", this.infoScaleX + " " + this.infoScaleY + " 1");
+          this.infoText.setAttribute("position", this.infoTextBaseX + " " + this.infoTextBaseY + " 0.004");
+          this.infoText.setAttribute(
+            "troika-text",
+            "fontSize: " +
+              liveSize * 1.12 +
+              "; value: information; font: ./typefaces/ABCDiatypeRoundedEdu-Regular.otf; color: #111111; anchor: center; baseline: middle"
           );
 
           var timeX = Math.min(right - boxW / 2 - pad * 0.28, liveSize * 12.6);
@@ -7732,8 +8287,17 @@ triggerReach: function () {
             "troika-text",
             "fontSize: " +
               timeSize +
-              "; value: --/--/----  --:--:--; font: ./ChicagoKare-Regular.otf; color: #FFFFFF; anchor: center; baseline: middle"
+              "; value: --/--/----  --:--:--; font: ./typefaces/ChicagoKare-Regular.otf; color: #FFFFFF; anchor: center; baseline: middle"
           );
+          var zoomSize = boxH;
+          var zoomGap = zoomSize * 0.34;
+          var plusX = timeX + boxW / 2 + zoomGap + zoomSize / 2;
+          var minusX = plusX + zoomSize + zoomGap;
+          this.setPlane(this.zoomPlusBox, plusX, statusY, zoomSize, zoomSize);
+          this.setPlane(this.zoomMinusBox, minusX, statusY, zoomSize, zoomSize);
+          this.setPlane(this.zoomPlusHorizontal, plusX, statusY, zoomSize * 0.54, zoomSize * 0.11);
+          this.setPlane(this.zoomPlusVertical, plusX, statusY, zoomSize * 0.11, zoomSize * 0.54);
+          this.setPlane(this.zoomMinusHorizontal, minusX, statusY, zoomSize * 0.54, zoomSize * 0.11);
         },
         tick: function () {
           this.updateLayout(false);
@@ -7745,6 +8309,38 @@ triggerReach: function () {
           if (this.dot) {
             var blink = nowSecond % 2 === 0 ? 1 : 0.24;
             this.dot.setAttribute("material", "shader: flat; color: #FF1010; opacity: " + blink + "; transparent: true; side: double");
+          }
+          if (this.infoEllipse && this.infoText && this.infoBaseX !== undefined) {
+            var infoButton = document.getElementById("liveCamInformation");
+            var infoPlaying = !!(infoButton && infoButton.classList.contains("is-playing"));
+            var infoHovering = !!(infoButton && infoButton.classList.contains("is-hovering"));
+            var nowMs = performance.now();
+            if (infoHovering || infoPlaying) {
+              this.infoJiggleStart = 0;
+              this.nextInfoJiggleAt = nowMs + 5200 + Math.random() * 8200;
+            } else if (!this.infoJiggleStart && nowMs >= this.nextInfoJiggleAt) {
+              this.infoJiggleStart = nowMs;
+            }
+            var jiggleT = this.infoJiggleStart ? (nowMs - this.infoJiggleStart) / this.infoJiggleDuration : 1;
+            var active = jiggleT >= 0 && jiggleT < 1;
+            if (this.infoJiggleStart && !active) {
+              this.infoJiggleStart = 0;
+              this.nextInfoJiggleAt = nowMs + 5200 + Math.random() * 8200;
+            }
+            var wave = active ? Math.sin(jiggleT * Math.PI * 8.2) * (1 - jiggleT * 0.42) : 0;
+            var hoverTarget = infoHovering ? 1 : 0;
+            this.infoHoverAmount += (hoverTarget - (this.infoHoverAmount || 0)) * 0.18;
+            var hover = this.infoHoverAmount || 0;
+            var rot = (1 - hover) * wave * THREE.MathUtils.degToRad(-4.2) + hover * THREE.MathUtils.degToRad(4);
+            var scaleBoost = 1 + hover * 0.065;
+            this.infoEllipse.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.002");
+            this.infoText.setAttribute("position", this.infoTextBaseX + " " + this.infoTextBaseY + " 0.004");
+            if (this.infoScaleX && this.infoScaleY) {
+              this.infoEllipse.object3D.scale.set(this.infoScaleX * scaleBoost, this.infoScaleY * scaleBoost, 1);
+            }
+            this.infoText.object3D.scale.set(scaleBoost, scaleBoost, 1);
+            this.infoEllipse.object3D.rotation.z = rot;
+            this.infoText.object3D.rotation.z = rot;
           }
         }
       });
@@ -7939,7 +8535,8 @@ triggerReach: function () {
         position="-2.35 1.75 -4.5"
         rotation="49.5 -4 12"
         camera="active: true; fov: 70; near: 0.01; far: 1000"
-        curved-world-drag-look>
+        curved-world-drag-look
+        live-cam-zoom>
         <a-entity id="liveCamVrHud" visible="false" live-cam-vr-hud></a-entity>
       </a-entity>
 
@@ -7948,12 +8545,17 @@ triggerReach: function () {
         <div class="live-cam-corner top-right"></div>
         <div class="live-cam-corner bottom-left"></div>
         <div class="live-cam-corner bottom-right"></div>
+        <button id="liveCamInformation" class="live-cam-information-button" type="button" aria-label="Information"><span>information</span></button>
         <div class="live-cam-status">
           <span class="live-cam-dot"></span>
           <span>live cam</span>
         </div>
         <div class="live-cam-control-group" aria-hidden="false">
           <div id="liveCamTime" class="live-cam-time">--/--/---- --:--:--</div>
+          <div class="live-cam-zoom-controls">
+            <button id="liveCamZoomIn" class="live-cam-zoom-button live-cam-zoom-in" type="button" aria-label="Zoom in"><span>+</span></button>
+            <button id="liveCamZoomOut" class="live-cam-zoom-button live-cam-zoom-out" type="button" aria-label="Zoom out"><span>-</span></button>
+          </div>
         </div>
       </div>
     </a-scene>
@@ -7962,6 +8564,7 @@ triggerReach: function () {
       (function () {
         var liveCamTime = document.getElementById("liveCamTime");
         var liveCamOverlay = document.querySelector(".live-cam-overlay");
+        var liveCamInformation = document.getElementById("liveCamInformation");
         var sceneEl = document.querySelector("a-scene");
         var liveCamVrHud = document.getElementById("liveCamVrHud");
         if (!liveCamTime) return;
@@ -8001,6 +8604,83 @@ triggerReach: function () {
 
         updateLiveCamTime();
         setInterval(updateLiveCamTime, 1000);
+
+        function triggerInformationSound(event) {
+          if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          var audio = sceneEl && sceneEl.components && sceneEl.components["exhibition-audio"];
+          if (audio && audio.playInformationSound) {
+            var playing = audio.playInformationSound();
+            if (typeof playing === "boolean" && liveCamInformation) {
+              liveCamInformation.classList.toggle("is-playing", playing);
+            }
+          }
+        }
+
+        function pointerIsOnInformation(event) {
+          if (!liveCamInformation) return false;
+          var rect = liveCamInformation.getBoundingClientRect();
+          return (
+            event.clientX >= rect.left &&
+            event.clientX <= rect.right &&
+            event.clientY >= rect.top &&
+            event.clientY <= rect.bottom
+          );
+        }
+
+        if (liveCamInformation) {
+          var informationJiggleTimer = null;
+
+          function scheduleInformationJiggle() {
+            if (informationJiggleTimer) clearTimeout(informationJiggleTimer);
+            informationJiggleTimer = setTimeout(function () {
+              if (
+                !liveCamInformation.classList.contains("is-playing") &&
+                !liveCamInformation.matches(":hover") &&
+                !liveCamInformation.classList.contains("is-hovering")
+              ) {
+                liveCamInformation.classList.add("is-jiggling");
+                setTimeout(function () {
+                  liveCamInformation.classList.remove("is-jiggling");
+                  scheduleInformationJiggle();
+                }, 700);
+              } else {
+                scheduleInformationJiggle();
+              }
+            }, 5200 + Math.random() * 8200);
+          }
+
+          window.addEventListener("suneden-information-audio", function (event) {
+            var playing = !!(event.detail && event.detail.playing);
+            liveCamInformation.classList.toggle("is-playing", playing);
+            liveCamInformation.classList.remove("is-jiggling");
+            if (!playing) scheduleInformationJiggle();
+          });
+
+          liveCamInformation.addEventListener("animationend", function () {
+            liveCamInformation.classList.remove("is-jiggling");
+          });
+
+          scheduleInformationJiggle();
+
+          function syncInformationHover(event) {
+            var hovering = !!(sceneEl && sceneEl.is && sceneEl.is("vr-mode") && pointerIsOnInformation(event));
+            liveCamInformation.classList.toggle("is-hovering", hovering);
+          }
+
+          window.addEventListener("pointermove", syncInformationHover, true);
+          window.addEventListener("pointerleave", function () {
+            liveCamInformation.classList.remove("is-hovering");
+          }, true);
+
+          liveCamInformation.addEventListener("pointerdown", triggerInformationSound);
+          window.addEventListener("pointerdown", function (event) {
+            if (!(sceneEl && sceneEl.is && sceneEl.is("vr-mode"))) return;
+            if (pointerIsOnInformation(event)) triggerInformationSound(event);
+          }, true);
+        }
 
         function syncLiveCamOverlayMode() {
           var useVrHud =
