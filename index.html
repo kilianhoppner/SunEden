@@ -305,6 +305,40 @@
         height: 54%;
       }
 
+      @media (min-width: 761px) and (max-width: 1180px) {
+        .live-cam-information-button {
+          top: calc(clamp(32px, 4.55vmin, 53px) - 3px);
+          bottom: auto;
+          left: clamp(125px, 10vw, 190px);
+          --info-base-transform: translateX(0);
+        }
+
+        .live-cam-control-group {
+          top: clamp(34px, 4.8vmin, 66px);
+          right: 0;
+          left: 0;
+          display: block;
+          height: clamp(30px, 2.92vmin, 48px);
+          gap: 0;
+          transform: none;
+        }
+
+        .live-cam-time {
+          position: absolute;
+          left: 50%;
+          top: 0;
+          transform: translateX(-50%);
+        }
+
+        .live-cam-status {
+          top: calc(clamp(34px, 4.8vmin, 66px) + clamp(30px, 2.92vmin, 48px) + clamp(9px, 1.08vmin, 14px));
+        }
+
+        .live-cam-zoom-controls {
+          display: none;
+        }
+      }
+
       @media (max-width: 760px) {
         .live-cam-information-button {
           top: auto;
@@ -1659,7 +1693,7 @@
           maxFov: { type: "number", default: 90 },
           step: { type: "number", default: 8 },
           speed: { type: "number", default: 9 },
-          returnIdleMs: { type: "number", default: 60000 },
+          returnIdleMs: { type: "number", default: 45000 },
           returnSpeed: { type: "number", default: 6 }
         },
         init: function () {
@@ -1703,6 +1737,7 @@
           }
         },
         pause: function () {
+          this.setZoomSoundActive(false);
           this.unbindButton(this.plusButton, this.onZoomIn);
           this.unbindButton(this.minusButton, this.onZoomOut);
           window.removeEventListener("pointerdown", this.onFullscreenPointerDown, true);
@@ -1748,7 +1783,7 @@
           }
         },
         isMobileZoomLayout: function () {
-          return window.matchMedia && window.matchMedia("(max-width: 760px)").matches;
+          return window.matchMedia && window.matchMedia("(max-width: 1180px)").matches;
         },
         touchDistance: function (touches) {
           var dx = touches[0].clientX - touches[1].clientX;
@@ -1759,6 +1794,7 @@
           if (!this.isMobileZoomLayout() || event.touches.length !== 2) return;
           this.pinching = true;
           this.zoomDirection = 0;
+          this.setZoomSoundActive(false);
           var dragLook = this.el.components && this.el.components["curved-world-drag-look"];
           if (dragLook) dragLook.dragging = false;
           this.pinchStartDistance = Math.max(1, this.touchDistance(event.touches));
@@ -1790,7 +1826,12 @@
             return;
           }
           this.pinching = false;
+          this.setZoomSoundActive(false);
           this.lastZoomInteractionTime = performance.now();
+        },
+        setZoomSoundActive: function (active) {
+          var audio = this.el.sceneEl && this.el.sceneEl.components && this.el.sceneEl.components["exhibition-audio"];
+          if (audio && audio.setZoomSoundActive) audio.setZoomSoundActive(!!active);
         },
         startZoom: function (direction, event) {
           if (event) {
@@ -1803,6 +1844,7 @@
         stopZoom: function () {
           if (this.zoomDirection) this.lastZoomInteractionTime = performance.now();
           this.zoomDirection = 0;
+          this.setZoomSoundActive(false);
         },
         applyFov: function () {
           var cameraComponent = this.el.components && this.el.components.camera;
@@ -1819,13 +1861,17 @@
         tick: function (_, deltaMs) {
           var dt = Math.min((deltaMs || 16) / 1000, 0.06);
           var nextFov = this.currentFov;
+          var userZooming = false;
+          var autoReturning = false;
           if (this.zoomDirection) {
+            userZooming = true;
             nextFov = THREE.MathUtils.clamp(
               this.currentFov + this.zoomDirection * this.data.speed * dt,
               this.data.minFov,
               this.data.maxFov
             );
           } else if (this.pinching) {
+            userZooming = true;
             var maxStep = this.data.speed * 2.4 * dt;
             var diff = this.pinchTargetFov - this.currentFov;
             nextFov = Math.abs(diff) <= maxStep
@@ -1835,6 +1881,7 @@
             Math.abs(this.currentFov - this.defaultFov) > 0.01 &&
             performance.now() - this.lastZoomInteractionTime >= this.data.returnIdleMs
           ) {
+            autoReturning = true;
             var returnDirection = this.defaultFov > this.currentFov ? 1 : -1;
             nextFov = this.currentFov + returnDirection * this.data.returnSpeed * dt;
             if (
@@ -1844,9 +1891,12 @@
               nextFov = this.defaultFov;
             }
           } else {
+            this.setZoomSoundActive(false);
             return;
           }
-          if (Math.abs(nextFov - this.currentFov) < 0.001) return;
+          var fovChanging = Math.abs(nextFov - this.currentFov) >= 0.001;
+          this.setZoomSoundActive((userZooming || autoReturning) && fovChanging);
+          if (!fovChanging) return;
           this.currentFov = nextFov;
           this.targetFov = nextFov;
           this.applyFov();
@@ -1862,6 +1912,8 @@
           fireBedVolume: { type: "number", default: 0.475 },
           fireBedDelay: { type: "number", default: 2.4 },
           helicopterVolume: { type: "number", default: 0.98 },
+          zoomVolume: { type: "number", default: 0.16 },
+          infoHoverVolume: { type: "number", default: 1.55 },
           footstepVolume: { type: "number", default: 0.55 },
           turnSoundVolume: { type: "number", default: 0.125 },
           breathingVolume: { type: "number", default: 0.07 },
@@ -1869,7 +1921,7 @@
           armSwooshVolume: { type: "number", default: 0.29 },
           hiVolume: { type: "number", default: 1.9 },
           armsVolume: { type: "number", default: 2.2 },
-          informationVolume: { type: "number", default: 0.62 },
+          informationVolume: { type: "number", default: 0.43 },
 
           birdVolume: { type: "number", default: 0.55 },
           fadeSpeed: { type: "number", default: 1.55 }
@@ -1905,6 +1957,7 @@
           this.armsBuffer = null;
           this.birdBuffer = null;
           this.sunedenBuffer = null;
+          this.infoHoverBuffer = null;
           this.pendingInformationSound = false;
           this.informationSource = null;
           this.informationGain = null;
@@ -1919,6 +1972,11 @@
           this.riverLoop = null;
           this.riverCurrent = 0;
           this.fireBedLoop = null;
+          this.zoomBuffer = null;
+          this.zoomGain = null;
+          this.zoomSource = null;
+          this.zoomCurrent = 0;
+          this.zoomSoundActive = false;
           this.lastStepBucket = null;
           this.lastStepTime = 0;
           this.lastTurnSoundTime = 0;
@@ -1952,6 +2010,8 @@
           this.stopSource(this.fireBedSource);
           this.stopSeamlessLoop(this.fireBedLoop);
           this.stopSeamlessLoop(this.riverLoop);
+          this.stopSource(this.zoomSource);
+          this.zoomSource = null;
         },
         remove: function () {
           window.removeEventListener("pointerdown", this.tryStart);
@@ -1979,6 +2039,9 @@
             this.riverGain = this.audioContext.createGain();
             this.riverGain.gain.value = 0;
             this.riverGain.connect(this.audioContext.destination);
+            this.zoomGain = this.audioContext.createGain();
+            this.zoomGain.gain.value = 0;
+            this.zoomGain.connect(this.audioContext.destination);
           }
           this.loadAudioBuffers();
           if (!this.heliPanner && this.helicopter) {
@@ -2036,12 +2099,19 @@
         },
         loadAudioBuffers: function () {
           if (!this.audioContext || this.fireBuffersLoading) return;
-          if (this.fireIntroBuffer && this.fireBedBuffer && this.riverBuffer && this.hiBuffer && this.armsBuffer && this.birdBuffer && this.sunedenBuffer) return;
+          if (this.fireIntroBuffer && this.fireBedBuffer && this.riverBuffer && this.zoomBuffer && this.hiBuffer && this.armsBuffer && this.birdBuffer && this.sunedenBuffer && this.infoHoverBuffer) return;
           var self = this;
           this.fireBuffersLoading = true;
           this.loadBuffer("audio/river.wav", function (buffer) {
             self.riverBuffer = buffer;
             if (self.mediaUnlocked && !self.riverLoop) self.startSeamlessLoop("river");
+          });
+          this.loadBuffer("audio/zoom.wav", function (buffer) {
+            self.zoomBuffer = buffer;
+            if (self.zoomSoundActive) self.startZoomLoop();
+          });
+          this.loadBuffer("audio/hover.wav", function (buffer) {
+            self.infoHoverBuffer = buffer;
           });
           this.loadBuffer("audio/hi.wav", function (buffer) {
             self.hiBuffer = buffer;
@@ -2116,10 +2186,16 @@
         startSeamlessLoop: function (kind) {
           var ctx = this.ensureAudioContext();
           if (!ctx || ctx.state !== "running") return false;
-          var buffer = kind === "river" ? this.riverBuffer : this.fireBedBuffer;
-          var outputGain = kind === "river" ? this.riverGain : this.fireBedGain;
+          var buffer = this.fireBedBuffer;
+          var outputGain = this.fireBedGain;
+          var fadeTime = 1.65;
+          if (kind === "river") {
+            buffer = this.riverBuffer;
+            outputGain = this.riverGain;
+            fadeTime = 1.45;
+          }
           if (!buffer || !outputGain) return;
-          var loop = this.makeSeamlessLoop(buffer, outputGain, kind === "river" ? 1.45 : 1.65);
+          var loop = this.makeSeamlessLoop(buffer, outputGain, fadeTime);
           var startAt = ctx.currentTime + 0.03;
           loop.nextStart = startAt;
           this.scheduleLoopSource(loop, loop.nextStart);
@@ -2489,6 +2565,45 @@ playBirdSqueak: function (position) {
           noise.start(now);
           noise.stop(now + 0.19);
         },
+        uiSoundBoost: function () {
+          return (this.fireActive ? 1.28 : 1) * (this.informationSource ? 1.75 : 1);
+        },
+        hoverSoundBoost: function () {
+          return (this.fireActive ? 1.45 : 1) * (this.informationSource ? 2.05 : 1);
+        },
+        playInfoHoverSound: function () {
+          this.playBufferAt(this.infoHoverBuffer, null, this.data.infoHoverVolume * this.hoverSoundBoost(), {
+            distanceModel: "linear",
+            refDistance: 1,
+            maxDistance: 1,
+            rolloffFactor: 0,
+            attack: 0.006,
+            release: 0.035
+          });
+        },
+        startZoomLoop: function () {
+          var ctx = this.ensureAudioContext();
+          if (!ctx || ctx.state !== "running" || !this.zoomBuffer || !this.zoomGain || this.zoomSource) return;
+          var source = ctx.createBufferSource();
+          source.buffer = this.zoomBuffer;
+          source.loop = true;
+          source.connect(this.zoomGain);
+          source.start(ctx.currentTime + 0.01);
+          this.zoomSource = source;
+        },
+        setZoomSoundActive: function (active) {
+          var next = !!active;
+          if (this.zoomSoundActive === next) return;
+          this.zoomSoundActive = next;
+          if (next) {
+            this.startZoomLoop();
+            if (this.zoomGain) this.zoomGain.gain.value = this.data.zoomVolume * this.uiSoundBoost();
+          } else {
+            if (this.zoomGain) this.zoomGain.gain.value = 0;
+            this.stopSource(this.zoomSource);
+            this.zoomSource = null;
+          }
+        },
         updateFootsteps: function () {
           var human = document.getElementById("human");
           var comp = human && human.components && human.components["human-house-walk"];
@@ -2538,7 +2653,8 @@ playBirdSqueak: function (position) {
           this.heliCurrent += (target - this.heliCurrent) * (1 - Math.exp(-1.9 * dt));
           if (!this.helicopter) return;
           var heliVolume = Math.max(0, Math.min(1, this.heliCurrent));
-          this.helicopter.volume = heliVolume;
+          var heliDucking = this.informationSource ? 0.7 : 1;
+          this.helicopter.volume = Math.max(0, Math.min(1, heliVolume * heliDucking));
           if (this.mediaUnlocked && (target > 0.002 || heliVolume > 0.006)) {
             this.helicopter.muted = false;
             this.playAudio(this.helicopter);
@@ -2626,6 +2742,12 @@ updateBirdSqueak: function () {
           if (this.mediaUnlocked && this.riverBuffer && !this.riverLoop) this.startSeamlessLoop("river");
           this.updateSeamlessLoop(this.riverLoop);
           this.updateSeamlessLoop(this.fireBedLoop);
+          if (this.zoomSoundActive) {
+            this.startZoomLoop();
+            if (this.zoomGain) this.zoomGain.gain.value = this.zoomSource ? this.data.zoomVolume * this.uiSoundBoost() : 0;
+          } else if (this.zoomGain) {
+            this.zoomGain.gain.value = 0;
+          }
           if (this.chicken) this.chicken.volume = this.data.chickenVolume + p * this.data.chickenFireBoost;
           this.playAudio(this.chicken);
           this.updateFootsteps();
@@ -2651,11 +2773,12 @@ updateBirdSqueak: function () {
             (bedTarget - this.fireBedCurrent) *
             (1 - Math.exp(-this.data.fadeSpeed * dt));
 
+          var fireDucking = this.informationSource ? 0.48 : 1;
           if (this.fireIntroGain) {
-            this.fireIntroGain.gain.value = Math.max(0, Math.min(1, this.fireIntroCurrent));
+            this.fireIntroGain.gain.value = Math.max(0, Math.min(1, this.fireIntroCurrent * fireDucking));
           }
           if (this.fireBedGain) {
-            this.fireBedGain.gain.value = Math.max(0, Math.min(1, this.fireBedCurrent));
+            this.fireBedGain.gain.value = Math.max(0, Math.min(1, this.fireBedCurrent * fireDucking));
           }
         }
       });
@@ -8334,7 +8457,7 @@ triggerReach: function () {
             var nowMs = performance.now();
             if (infoHovering || infoPlaying) {
               this.infoJiggleStart = 0;
-              this.nextInfoJiggleAt = nowMs + 5200 + Math.random() * 8200;
+              this.nextInfoJiggleAt = nowMs + 4200 + Math.random() * 6800;
             } else if (!this.infoJiggleStart && nowMs >= this.nextInfoJiggleAt) {
               this.infoJiggleStart = nowMs;
             }
@@ -8342,7 +8465,7 @@ triggerReach: function () {
             var active = jiggleT >= 0 && jiggleT < 1;
             if (this.infoJiggleStart && !active) {
               this.infoJiggleStart = 0;
-              this.nextInfoJiggleAt = nowMs + 5200 + Math.random() * 8200;
+              this.nextInfoJiggleAt = nowMs + 4200 + Math.random() * 6800;
             }
             var wave = active ? Math.sin(jiggleT * Math.PI * 8.2) * (1 - jiggleT * 0.42) : 0;
             var hoverTarget = infoHovering ? 1 : 0;
@@ -8621,7 +8744,6 @@ triggerReach: function () {
 
         updateLiveCamTime();
         setInterval(updateLiveCamTime, 1000);
-
         function triggerInformationSound(event) {
           if (event) {
             event.preventDefault();
@@ -8668,7 +8790,7 @@ triggerReach: function () {
               } else {
                 scheduleInformationJiggle();
               }
-            }, 5200 + Math.random() * 8200);
+            }, 4200 + Math.random() * 6800);
           }
 
           window.addEventListener("suneden-information-audio", function (event) {
@@ -8684,10 +8806,23 @@ triggerReach: function () {
 
           scheduleInformationJiggle();
 
+          function playInformationHoverSound() {
+            var audio = sceneEl && sceneEl.components && sceneEl.components["exhibition-audio"];
+            if (audio && audio.playInfoHoverSound) audio.playInfoHoverSound();
+          }
+
           function syncInformationHover(event) {
+            var wasHovering = liveCamInformation.classList.contains("is-hovering");
             var isTouchPointer = event && event.pointerType === "touch";
             var hovering = !!(sceneEl && sceneEl.is && sceneEl.is("vr-mode") && !isTouchPointer && pointerIsOnInformation(event));
             liveCamInformation.classList.toggle("is-hovering", hovering);
+            if (hovering && !wasHovering) playInformationHoverSound();
+          }
+
+          if (canUsePointerHover) {
+            liveCamInformation.addEventListener("pointerenter", function (event) {
+              if (event.pointerType !== "touch") playInformationHoverSound();
+            });
           }
 
           window.addEventListener("pointermove", syncInformationHover, true);
