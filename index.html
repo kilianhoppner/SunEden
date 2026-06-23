@@ -305,6 +305,91 @@
         height: 54%;
       }
 
+      @media (min-width: 1181px) {
+        .live-cam-corner {
+          width: clamp(55.12px, 5.3vmin, 101.76px);
+          height: clamp(55.12px, 5.3vmin, 101.76px);
+        }
+
+        .live-cam-corner.top-left {
+          top: clamp(36.04px, 5.088vmin, 69.96px);
+          left: clamp(36.04px, 5.088vmin, 72.08px);
+          border-top-width: clamp(6.36px, 0.5088vmin, 9.54px);
+          border-left-width: clamp(6.36px, 0.5088vmin, 9.54px);
+        }
+
+        .live-cam-corner.top-right {
+          top: clamp(36.04px, 5.088vmin, 69.96px);
+          right: clamp(36.04px, 5.088vmin, 72.08px);
+          border-top-width: clamp(6.36px, 0.5088vmin, 9.54px);
+          border-right-width: clamp(6.36px, 0.5088vmin, 9.54px);
+        }
+
+        .live-cam-corner.bottom-left {
+          bottom: clamp(36.04px, 5.088vmin, 69.96px);
+          left: clamp(36.04px, 5.088vmin, 72.08px);
+          border-bottom-width: clamp(6.36px, 0.5088vmin, 9.54px);
+          border-left-width: clamp(6.36px, 0.5088vmin, 9.54px);
+        }
+
+        .live-cam-corner.bottom-right {
+          right: clamp(36.04px, 5.088vmin, 72.08px);
+          bottom: clamp(36.04px, 5.088vmin, 69.96px);
+          border-right-width: clamp(6.36px, 0.5088vmin, 9.54px);
+          border-bottom-width: clamp(6.36px, 0.5088vmin, 9.54px);
+        }
+
+        .live-cam-status {
+          top: calc(clamp(33.92px, 4.823vmin, 60.42px) - 3.18px);
+          gap: clamp(11.13px, 1.3038vmin, 18.02px);
+          font-size: clamp(33.92px, 3.3708vmin, 58.3px);
+        }
+
+        .live-cam-status span:last-child {
+          transform: translateY(calc(0.075em - 1.06px));
+        }
+
+        .live-cam-dot {
+          width: clamp(31.8px, 2.8938vmin, 51.94px);
+          height: clamp(31.8px, 2.8938vmin, 51.94px);
+          transform: translateY(1.06px);
+        }
+
+        .live-cam-information-button {
+          top: calc(clamp(33.92px, 4.823vmin, 56.18px) - 3.18px);
+          left: clamp(132.5px, 10.6vw, 201.4px);
+          width: clamp(91.16px, 6.731vmin, 129.32px);
+          height: clamp(44.52px, 3.763vmin, 61.48px);
+          font-size: clamp(36.04px, 3.127vmin, 50.88px);
+        }
+
+        .live-cam-information-button span {
+          transform: translateY(calc(0.015em - 1.06px));
+        }
+
+        .live-cam-control-group {
+          top: calc(clamp(33.92px, 4.823vmin, 56.18px) + 2.12px);
+          right: clamp(132.5px, 10.6vw, 201.4px);
+          gap: clamp(29.68px, 2.067vmin, 38.16px);
+        }
+
+        .live-cam-time {
+          min-height: clamp(31.8px, 3.0952vmin, 50.88px);
+          padding: 0 clamp(4.24px, 0.371vmin, 6.36px);
+          font-size: clamp(30.74px, 3.0952vmin, 55.12px);
+        }
+
+        .live-cam-zoom-controls {
+          gap: clamp(7.42px, 0.742vmin, 12.72px);
+        }
+
+        .live-cam-zoom-button {
+          width: clamp(31.8px, 3.0952vmin, 50.88px);
+          min-width: clamp(31.8px, 3.0952vmin, 50.88px);
+          height: clamp(31.8px, 3.0952vmin, 50.88px);
+        }
+      }
+
       @media (min-width: 761px) and (max-width: 1180px) {
         .live-cam-information-button {
           top: calc(clamp(32px, 4.55vmin, 53px) - 3px);
@@ -1919,7 +2004,7 @@
           breathingVolume: { type: "number", default: 0.07 },
           swooshVolume: { type: "number", default: 0.094 },
           armSwooshVolume: { type: "number", default: 0.29 },
-          hiVolume: { type: "number", default: 1.9 },
+          hiVolume: { type: "number", default: 1.75 },
           armsVolume: { type: "number", default: 2.2 },
           informationVolume: { type: "number", default: 0.43 },
 
@@ -1961,6 +2046,8 @@
           this.pendingInformationSound = false;
           this.informationSource = null;
           this.informationGain = null;
+          this.informationEnvelopeGain = null;
+          this.informationCurrent = 0;
           this.lastBirdNear = false;
           this.nextBirdSoundTime = 0;
           this.fireIntroSource = null;
@@ -2257,15 +2344,18 @@ stopInformationSound: function () {
   if (this.informationGain && this.audioContext) {
     try {
       var now = this.audioContext.currentTime;
-      this.informationGain.gain.cancelScheduledValues(now);
-      this.informationGain.gain.setValueAtTime(Math.max(0.0001, this.informationGain.gain.value || 0.0001), now);
-      this.informationGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+      var fadeGain = this.informationEnvelopeGain || this.informationGain;
+      fadeGain.gain.cancelScheduledValues(now);
+      fadeGain.gain.setValueAtTime(Math.max(0.0001, fadeGain.gain.value || 0.0001), now);
+      fadeGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
     } catch (e) {}
   }
   if (this.informationSource) {
     try { this.informationSource.stop((this.audioContext && this.audioContext.currentTime || 0) + 0.1); } catch (e) {}
     this.informationSource = null;
     this.informationGain = null;
+    this.informationEnvelopeGain = null;
+    this.informationCurrent = 0;
   }
   this.setInformationButtonPlaying(false);
   return false;
@@ -2284,24 +2374,31 @@ playInformationSound: function () {
   this.pendingInformationSound = false;
   var now = ctx.currentTime;
   var source = ctx.createBufferSource();
+  var envelopeGain = ctx.createGain();
   var gain = ctx.createGain();
   var self = this;
   source.buffer = this.sunedenBuffer;
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, this.data.informationVolume), now + 0.018);
-  gain.gain.setValueAtTime(Math.max(0.0002, this.data.informationVolume), now + Math.max(0.018, this.sunedenBuffer.duration - 0.08));
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + this.sunedenBuffer.duration + 0.03);
-  source.connect(gain).connect(ctx.destination);
+  var informationTarget = this.fireActive ? this.data.informationVolume : this.data.informationVolume * 0.84;
+  this.informationCurrent = informationTarget;
+  envelopeGain.gain.setValueAtTime(0.0001, now);
+  envelopeGain.gain.exponentialRampToValueAtTime(1, now + 0.018);
+  envelopeGain.gain.setValueAtTime(1, now + Math.max(0.018, this.sunedenBuffer.duration - 0.08));
+  envelopeGain.gain.exponentialRampToValueAtTime(0.0001, now + this.sunedenBuffer.duration + 0.03);
+  gain.gain.setValueAtTime(Math.max(0.0002, informationTarget), now);
+  source.connect(envelopeGain).connect(gain).connect(ctx.destination);
   source.onended = function () {
     if (self.informationSource === source) {
       self.informationSource = null;
       self.informationGain = null;
+      self.informationEnvelopeGain = null;
+      self.informationCurrent = 0;
       self.setInformationButtonPlaying(false);
     }
     source.onended = null;
   };
   this.informationSource = source;
   this.informationGain = gain;
+  this.informationEnvelopeGain = envelopeGain;
   this.setInformationButtonPlaying(true);
   source.start(now);
   source.stop(now + this.sunedenBuffer.duration + 0.1);
@@ -2724,6 +2821,14 @@ updateBirdSqueak: function () {
           this.tmpPos.y += 0.4;
           this.setPannerPosition(this.breathPanner, this.tmpPos);
         },
+        updateInformationVolume: function (dt) {
+          if (!this.informationSource || !this.informationGain) return;
+          var target = this.fireActive ? this.data.informationVolume : this.data.informationVolume * 0.84;
+          this.informationCurrent +=
+            (target - this.informationCurrent) *
+            (1 - Math.exp(-1.65 * dt));
+          this.informationGain.gain.value = Math.max(0.0002, this.informationCurrent);
+        },
         tick: function (_, deltaMs) {
           var dt = Math.min((deltaMs || 16) / 1000, 0.08);
           var p = THREE.MathUtils.smoothstep(NIGHT_MODE_AMOUNT, 0.08, 0.55);
@@ -2755,6 +2860,7 @@ updateBirdSqueak: function () {
           this.updateSwoosh(dt, NIGHT_MODE_AMOUNT);
           this.updateBirdSqueak();
           this.updateBreathing(dt, NIGHT_MODE_AMOUNT);
+          this.updateInformationVolume(dt);
 
           var introTarget = this.fireActive && this.fireIntroStarted && this.fireIntroSource
             ? p * this.data.fireIntroVolume
