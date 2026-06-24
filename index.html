@@ -420,7 +420,10 @@
         }
 
         .live-cam-zoom-controls {
-          display: none;
+          position: absolute;
+          top: 0;
+          right: clamp(125px, 10vw, 190px);
+          display: flex;
         }
       }
 
@@ -1868,7 +1871,7 @@
           }
         },
         isMobileZoomLayout: function () {
-          return window.matchMedia && window.matchMedia("(max-width: 1180px)").matches;
+          return window.matchMedia && window.matchMedia("(max-width: 760px)").matches;
         },
         touchDistance: function (touches) {
           var dx = touches[0].clientX - touches[1].clientX;
@@ -1990,23 +1993,23 @@
 
       AFRAME.registerComponent("exhibition-audio", {
         schema: {
-          riverVolume: { type: "number", default: 0.175 },
-          chickenVolume: { type: "number", default: 0.15 },
-          chickenFireBoost: { type: "number", default: 0.125 },
-          fireIntroVolume: { type: "number", default: 0.31 },
-          fireBedVolume: { type: "number", default: 0.4 },
+          riverVolume: { type: "number", default: 0.15 },
+          chickenVolume: { type: "number", default: 0.105 },
+          chickenFireBoost: { type: "number", default: 0.105 },
+          fireIntroVolume: { type: "number", default: 0.27 },
+          fireBedVolume: { type: "number", default: 0.36 },
           fireBedDelay: { type: "number", default: 2.4 },
-          helicopterVolume: { type: "number", default: 0.98 },
+          helicopterVolume: { type: "number", default: 0.9 },
           zoomVolume: { type: "number", default: 0.16 },
-          infoHoverVolume: { type: "number", default: 1.55 },
-          footstepVolume: { type: "number", default: 0.55 },
+          infoHoverVolume: { type: "number", default: 1.35 },
+          footstepVolume: { type: "number", default: 0.74 },
           turnSoundVolume: { type: "number", default: 0.125 },
           breathingVolume: { type: "number", default: 0.07 },
           swooshVolume: { type: "number", default: 0.094 },
-          armSwooshVolume: { type: "number", default: 0.29 },
+          armSwooshVolume: { type: "number", default: 0.245 },
           hiVolume: { type: "number", default: 1.75 },
           armsVolume: { type: "number", default: 2.2 },
-          informationVolume: { type: "number", default: 0.43 },
+          informationVolume: { type: "number", default: 0.385 },
 
           birdVolume: { type: "number", default: 0.55 },
           fadeSpeed: { type: "number", default: 1.55 }
@@ -2023,6 +2026,9 @@
           this.helicopter.preload = "auto";
           this.breathing.preload = "auto";
           this.chicken.volume = this.data.chickenVolume;
+          this.chicken.playbackRate = 0.92;
+          this.chickenCurrent = this.data.chickenVolume;
+          this.chickenRateCurrent = 0.92;
           this.helicopter.volume = 0;
           this.breathing.volume = 1;
           this.fireActive = false;
@@ -2043,6 +2049,7 @@
           this.birdBuffer = null;
           this.sunedenBuffer = null;
           this.infoHoverBuffer = null;
+          this.footstepBuffer = null;
           this.pendingInformationSound = false;
           this.informationSource = null;
           this.informationGain = null;
@@ -2186,7 +2193,7 @@
         },
         loadAudioBuffers: function () {
           if (!this.audioContext || this.fireBuffersLoading) return;
-          if (this.fireIntroBuffer && this.fireBedBuffer && this.riverBuffer && this.zoomBuffer && this.hiBuffer && this.armsBuffer && this.birdBuffer && this.sunedenBuffer && this.infoHoverBuffer) return;
+          if (this.fireIntroBuffer && this.fireBedBuffer && this.riverBuffer && this.zoomBuffer && this.hiBuffer && this.armsBuffer && this.birdBuffer && this.sunedenBuffer && this.infoHoverBuffer && this.footstepBuffer) return;
           var self = this;
           this.fireBuffersLoading = true;
           this.loadBuffer("audio/river.wav", function (buffer) {
@@ -2199,6 +2206,9 @@
           });
           this.loadBuffer("audio/hover.wav", function (buffer) {
             self.infoHoverBuffer = buffer;
+          });
+          this.loadBuffer("audio/footstep.wav", function (buffer) {
+            self.footstepBuffer = buffer;
           });
           this.loadBuffer("audio/hi.wav", function (buffer) {
             self.hiBuffer = buffer;
@@ -2378,7 +2388,7 @@ playInformationSound: function () {
   var gain = ctx.createGain();
   var self = this;
   source.buffer = this.sunedenBuffer;
-  var informationTarget = this.fireActive ? this.data.informationVolume : this.data.informationVolume * 0.84;
+  var informationTarget = this.fireActive ? this.data.informationVolume * 1.05 : this.data.informationVolume * 0.84;
   this.informationCurrent = informationTarget;
   envelopeGain.gain.setValueAtTime(0.0001, now);
   envelopeGain.gain.exponentialRampToValueAtTime(1, now + 0.018);
@@ -2586,47 +2596,16 @@ playBirdSqueak: function (position) {
           }
         },
         playFootstep: function (strength, position) {
-          var ctx = this.ensureAudioContext();
-          if (!ctx || ctx.state !== "running") return;
-          var now = ctx.currentTime;
-          var osc = ctx.createOscillator();
-          var gain = ctx.createGain();
-          var filter = ctx.createBiquadFilter();
-          var panner = ctx.createPanner();
-          filter.type = "lowpass";
-          filter.frequency.setValueAtTime(260, now);
-          panner.panningModel = "HRTF";
-          panner.distanceModel = "inverse";
-          panner.refDistance = 3.1;
-          panner.maxDistance = 34;
-          panner.rolloffFactor = 1.18;
-          this.setPannerPosition(panner, position);
+          if (!this.footstepBuffer) return;
           var volume = this.data.footstepVolume * THREE.MathUtils.clamp(strength, 0.38, 1.25);
-          osc.type = "sine";
-          osc.frequency.setValueAtTime(92, now);
-          osc.frequency.exponentialRampToValueAtTime(42, now + 0.12);
-          gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), now + 0.012);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
-          var noise = ctx.createBufferSource();
-          var noiseGain = ctx.createGain();
-          var bufferLength = Math.max(1, Math.floor(ctx.sampleRate * 0.075));
-          var buffer = ctx.createBuffer(1, bufferLength, ctx.sampleRate);
-          var data = buffer.getChannelData(0);
-          for (var i = 0; i < bufferLength; i++) {
-            var decay = 1 - i / bufferLength;
-            data[i] = (Math.random() * 2 - 1) * decay * decay;
-          }
-          noise.buffer = buffer;
-          noiseGain.gain.setValueAtTime(0.0001, now);
-          noiseGain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume * 0.42), now + 0.008);
-          noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
-          osc.connect(filter).connect(gain).connect(panner).connect(ctx.destination);
-          noise.connect(noiseGain).connect(panner);
-          osc.start(now);
-          noise.start(now);
-          osc.stop(now + 0.2);
-          noise.stop(now + 0.095);
+          this.playBufferAt(this.footstepBuffer, position, volume, {
+            refDistance: 3.1,
+            maxDistance: 34,
+            rolloffFactor: 1.18,
+            attack: 0.018,
+            release: 0.075,
+            tail: 0.045
+          });
         },
         playTurnSound: function (amount, position) {
           var ctx = this.ensureAudioContext();
@@ -2824,7 +2803,7 @@ updateBirdSqueak: function () {
         },
         updateInformationVolume: function (dt) {
           if (!this.informationSource || !this.informationGain) return;
-          var target = this.fireActive ? this.data.informationVolume : this.data.informationVolume * 0.84;
+          var target = this.fireActive ? this.data.informationVolume * 1.05 : this.data.informationVolume * 0.84;
           this.informationCurrent +=
             (target - this.informationCurrent) *
             (1 - Math.exp(-1.65 * dt));
@@ -2854,7 +2833,18 @@ updateBirdSqueak: function () {
           } else if (this.zoomGain) {
             this.zoomGain.gain.value = 0;
           }
-          if (this.chicken) this.chicken.volume = this.data.chickenVolume + p * this.data.chickenFireBoost;
+          if (this.chicken) {
+            var chickenTarget = this.data.chickenVolume + p * (this.data.chickenFireBoost + 0.018);
+            var chickenRateTarget = 0.92 + p * 0.06;
+            this.chickenCurrent +=
+              (chickenTarget - this.chickenCurrent) *
+              (1 - Math.exp(-1.9 * dt));
+            this.chickenRateCurrent +=
+              (chickenRateTarget - this.chickenRateCurrent) *
+              (1 - Math.exp(-1.55 * dt));
+            this.chicken.volume = this.chickenCurrent;
+            this.chicken.playbackRate = this.chickenRateCurrent;
+          }
           this.playAudio(this.chicken);
           this.updateFootsteps();
           this.updateHelicopter(dt, NIGHT_MODE_AMOUNT);
@@ -8185,7 +8175,7 @@ triggerReach: function () {
           this.lastLayoutHeight = 0;
           this.lastFov = 0;
           this.lastSecond = -1;
-          this.nextInfoJiggleAt = performance.now() + 5200 + Math.random() * 8200;
+          this.nextInfoJiggleAt = performance.now() + 4300 + Math.random() * 7000;
           this.infoJiggleStart = 0;
           this.infoJiggleDuration = 720;
           this.infoHoverAmount = 0;
@@ -8564,7 +8554,7 @@ triggerReach: function () {
             var nowMs = performance.now();
             if (infoHovering || infoPlaying) {
               this.infoJiggleStart = 0;
-              this.nextInfoJiggleAt = nowMs + 4200 + Math.random() * 6800;
+              this.nextInfoJiggleAt = nowMs + 3500 + Math.random() * 5600;
             } else if (!this.infoJiggleStart && nowMs >= this.nextInfoJiggleAt) {
               this.infoJiggleStart = nowMs;
             }
@@ -8572,7 +8562,7 @@ triggerReach: function () {
             var active = jiggleT >= 0 && jiggleT < 1;
             if (this.infoJiggleStart && !active) {
               this.infoJiggleStart = 0;
-              this.nextInfoJiggleAt = nowMs + 4200 + Math.random() * 6800;
+              this.nextInfoJiggleAt = nowMs + 3500 + Math.random() * 5600;
             }
             var wave = active ? Math.sin(jiggleT * Math.PI * 8.2) * (1 - jiggleT * 0.42) : 0;
             var hoverTarget = infoHovering ? 1 : 0;
@@ -8897,7 +8887,7 @@ triggerReach: function () {
               } else {
                 scheduleInformationJiggle();
               }
-            }, 4200 + Math.random() * 6800);
+            }, 3500 + Math.random() * 5600);
           }
 
           window.addEventListener("suneden-information-audio", function (event) {
