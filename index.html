@@ -1993,8 +1993,8 @@
           riverVolume: { type: "number", default: 0.175 },
           chickenVolume: { type: "number", default: 0.15 },
           chickenFireBoost: { type: "number", default: 0.125 },
-          fireIntroVolume: { type: "number", default: 0.34 },
-          fireBedVolume: { type: "number", default: 0.475 },
+          fireIntroVolume: { type: "number", default: 0.31 },
+          fireBedVolume: { type: "number", default: 0.4 },
           fireBedDelay: { type: "number", default: 2.4 },
           helicopterVolume: { type: "number", default: 0.98 },
           zoomVolume: { type: "number", default: 0.16 },
@@ -2675,7 +2675,8 @@ playBirdSqueak: function (position) {
             maxDistance: 1,
             rolloffFactor: 0,
             attack: 0.006,
-            release: 0.035
+            release: 0.035,
+            rate: 1.2
           });
         },
         startZoomLoop: function () {
