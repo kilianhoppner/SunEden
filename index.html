@@ -200,7 +200,9 @@
       .live-cam-information-button.is-playing:not(:hover):not(.is-hovering),
       .live-cam-information-button.is-touch-reset,
       .live-cam-information-button.is-touch-reset:hover,
-      .live-cam-information-button.is-touch-reset.is-hovering {
+      .live-cam-information-button.is-touch-reset.is-hovering,
+      .live-cam-information-button.hover-disabled:hover,
+      .live-cam-information-button.hover-disabled.is-hovering {
         transform: var(--info-base-transform);
       }
 
@@ -8807,6 +8809,7 @@ triggerReach: function () {
         var liveCamInformation = document.getElementById("liveCamInformation");
         var sceneEl = document.querySelector("a-scene");
         var liveCamVrHud = document.getElementById("liveCamVrHud");
+        var INFORMATION_BUTTON_HOVER_ENABLED = false; // Exhibition touchscreen mode: set to true to restore mouse hover.
         if (!liveCamTime) return;
 
         function pad2(value) {
@@ -8870,8 +8873,9 @@ triggerReach: function () {
         }
 
         if (liveCamInformation) {
+          liveCamInformation.classList.toggle("hover-disabled", !INFORMATION_BUTTON_HOVER_ENABLED);
           var informationJiggleTimer = null;
-          var canUsePointerHover = !window.matchMedia || window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+          var canUsePointerHover = INFORMATION_BUTTON_HOVER_ENABLED && (!window.matchMedia || window.matchMedia("(hover: hover) and (pointer: fine)").matches);
 
           function scheduleInformationJiggle() {
             if (informationJiggleTimer) clearTimeout(informationJiggleTimer);
@@ -8912,6 +8916,10 @@ triggerReach: function () {
           }
 
           function syncInformationHover(event) {
+            if (!INFORMATION_BUTTON_HOVER_ENABLED) {
+              liveCamInformation.classList.remove("is-hovering");
+              return;
+            }
             var wasHovering = liveCamInformation.classList.contains("is-hovering");
             var isTouchPointer = event && event.pointerType === "touch";
             var hovering = !!(sceneEl && sceneEl.is && sceneEl.is("vr-mode") && !isTouchPointer && pointerIsOnInformation(event));
