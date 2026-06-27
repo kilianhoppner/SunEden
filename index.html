@@ -197,7 +197,10 @@
         }
       }
 
-      .live-cam-information-button.is-playing:not(:hover):not(.is-hovering) {
+      .live-cam-information-button.is-playing:not(:hover):not(.is-hovering),
+      .live-cam-information-button.is-touch-reset,
+      .live-cam-information-button.is-touch-reset:hover,
+      .live-cam-information-button.is-touch-reset.is-hovering {
         transform: var(--info-base-transform);
       }
 
@@ -8916,30 +8919,51 @@ triggerReach: function () {
             if (hovering && !wasHovering) playInformationHoverSound();
           }
 
+          function resetInformationTouchState() {
+            liveCamInformation.classList.remove("is-hovering");
+            liveCamInformation.classList.remove("is-jiggling");
+            liveCamInformation.classList.add("is-touch-reset");
+            setTimeout(function () { liveCamInformation.blur(); }, 0);
+          }
+
+          function releaseInformationTouchReset(event) {
+            if (event && event.pointerType === "touch") return;
+            liveCamInformation.classList.remove("is-touch-reset");
+          }
+
           if (canUsePointerHover) {
             liveCamInformation.addEventListener("pointerenter", function (event) {
-              if (event.pointerType !== "touch") playInformationHoverSound();
+              if (event.pointerType !== "touch") {
+                releaseInformationTouchReset(event);
+                playInformationHoverSound();
+              }
             });
           }
 
-          window.addEventListener("pointermove", syncInformationHover, true);
+          window.addEventListener("pointermove", function (event) {
+            releaseInformationTouchReset(event);
+            syncInformationHover(event);
+          }, true);
           window.addEventListener("pointerleave", function () {
             liveCamInformation.classList.remove("is-hovering");
           }, true);
 
           liveCamInformation.addEventListener("pointerdown", function (event) {
-            if (event.pointerType === "touch") {
-              liveCamInformation.classList.remove("is-hovering");
-              setTimeout(function () { liveCamInformation.blur(); }, 0);
-            }
+            if (event.pointerType === "touch") resetInformationTouchState();
             triggerInformationSound(event);
           });
+          liveCamInformation.addEventListener("pointerup", function (event) {
+            if (event.pointerType === "touch") resetInformationTouchState();
+          });
+          liveCamInformation.addEventListener("pointercancel", function (event) {
+            if (event.pointerType === "touch") resetInformationTouchState();
+          });
+          window.addEventListener("touchend", resetInformationTouchState, true);
           window.addEventListener("pointerdown", function (event) {
             if (!(sceneEl && sceneEl.is && sceneEl.is("vr-mode"))) return;
             if (pointerIsOnInformation(event)) {
-              if (event.pointerType === "touch") liveCamInformation.classList.remove("is-hovering");
+              if (event.pointerType === "touch") resetInformationTouchState();
               triggerInformationSound(event);
-              if (event.pointerType === "touch") setTimeout(function () { liveCamInformation.blur(); }, 0);
             }
           }, true);
         }
