@@ -230,6 +230,54 @@
         transform: translateY(calc(0.015em - 1px));
       }
 
+      .live-cam-map-button {
+        appearance: none;
+        position: absolute;
+        top: calc(clamp(32px, 4.55vmin, 53px) - 3px);
+        left: calc(clamp(125px, 10vw, 190px) + clamp(86px, 6.35vmin, 122px) + clamp(20px, 1.85vmin, 30px));
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: clamp(86px, 6.35vmin, 122px);
+        height: clamp(42px, 3.55vmin, 58px);
+        padding: 0;
+        border: 0;
+        border-radius: 999px;
+        background: #25ff00;
+        color: #111111;
+        cursor: pointer;
+        pointer-events: auto;
+        text-decoration: none;
+        font-family: "ABCDiatypeRoundedEdu", Arial, sans-serif;
+        font-synthesis: none;
+        font-weight: 300;
+        text-shadow: none;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-text-stroke: 0 transparent;
+        font-size: clamp(24px, 2.05vmin, 34px);
+        line-height: 1;
+        letter-spacing: 0;
+        white-space: nowrap;
+        --map-base-transform: translateX(0);
+        transform: var(--map-base-transform);
+        transform-origin: 50% 50%;
+        transform-box: border-box;
+        will-change: transform;
+        transition: transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+      .live-cam-map-button span {
+        display: block;
+        transform: translateY(calc(0.075em - 1px));
+      }
+
+      .live-cam-map-button.is-hovering,
+      .live-cam-map-button:hover {
+        transform: var(--map-base-transform) scale(1.32) rotate(4deg);
+      }
+
       .live-cam-control-group {
         position: absolute;
         top: calc(clamp(32px, 4.55vmin, 53px) + 2px);
@@ -368,6 +416,14 @@
           font-size: clamp(36.04px, 3.127vmin, 50.88px);
         }
 
+        .live-cam-map-button {
+          top: calc(clamp(33.92px, 4.823vmin, 56.18px) - 3.18px);
+          left: calc(clamp(132.5px, 10.6vw, 201.4px) + clamp(91.16px, 6.731vmin, 129.32px) + clamp(21.2px, 1.961vmin, 31.8px));
+          width: clamp(91.16px, 6.731vmin, 129.32px);
+          height: clamp(44.52px, 3.763vmin, 61.48px);
+          font-size: clamp(25.44px, 2.173vmin, 36.04px);
+        }
+
         .live-cam-information-button span {
           transform: translateY(calc(0.015em - 1.06px));
         }
@@ -403,6 +459,11 @@
           --info-base-transform: translateX(0);
         }
 
+        .live-cam-map-button {
+          top: calc(clamp(32px, 4.55vmin, 53px) - 3px);
+          left: calc(clamp(125px, 10vw, 190px) + clamp(86px, 6.35vmin, 122px) + clamp(20px, 1.85vmin, 30px));
+        }
+
         .live-cam-control-group {
           top: clamp(34px, 4.8vmin, 66px);
           right: 0;
@@ -436,11 +497,21 @@
         .live-cam-information-button {
           top: auto;
           bottom: calc(clamp(32px, 4.55vmin, 53px) + 2px + clamp(10px, 1.4vmin, 20px));
-          left: 50%;
+          left: calc(50% - (clamp(76px, 19.2vw, 108px) + clamp(18px, 4vw, 26px)) / 2);
           --info-base-transform: translateX(-50%);
           width: clamp(76px, 19.2vw, 108px);
           height: clamp(38px, 9.2vw, 54px);
           font-size: clamp(31px, 7.25vw, 42px);
+        }
+
+        .live-cam-map-button {
+          top: auto;
+          bottom: calc(clamp(32px, 4.55vmin, 53px) + 2px + clamp(10px, 1.4vmin, 20px));
+          left: calc(50% + clamp(18px, 4vw, 26px) / 2);
+          width: clamp(76px, 19.2vw, 108px);
+          height: clamp(38px, 9.2vw, 54px);
+          font-size: clamp(21px, 5.4vw, 30px);
+          --map-base-transform: translateX(0);
         }
 
         .live-cam-control-group {
@@ -1692,7 +1763,7 @@
         isPointerOnZoomControl: function (event) {
           var scene = this.el.sceneEl;
           if (!scene || !scene.is || !scene.is("vr-mode")) return false;
-          var buttons = document.querySelectorAll(".live-cam-zoom-button, .live-cam-information-button");
+          var buttons = document.querySelectorAll(".live-cam-zoom-button, .live-cam-information-button, .live-cam-map-button");
           for (var i = 0; i < buttons.length; i++) {
             var rect = buttons[i].getBoundingClientRect();
             if (
@@ -4210,76 +4281,59 @@ triggerReach: function () {
 
       AFRAME.registerComponent("giraffe-bottom-walk", {
         schema: {
-          latMin: { type: "number", default: -1.38 },
-          latMax: { type: "number", default: -0.058 },
-          randomStart: { type: "boolean", default: true },
-          visibleLonCenter: { type: "number", default: 0 },
-          visibleLonHalfWidth: { type: "number", default: 0.92 },
-          startLongitude: { type: "number", default: 0 },
-          startLatitude: { type: "number", default: -0.098 },
-          heightOffset: { type: "number", default: 0.26 },
-          maxLonRate: { type: "number", default: 0.095 },
-          maxLatRate: { type: "number", default: 0.048 }
+          latMin: { type: "number", default: -0.24 },
+          latMax: { type: "number", default: -0.1 },
+          visibleLonCenter: { type: "number", default: -0.48 },
+          visibleLonHalfWidth: { type: "number", default: 0.36 },
+          startPhase: { type: "number", default: 0.35 },
+          heightOffset: { type: "number", default: -0.006 },
+          patrolSpeed: { type: "number", default: 0.032 }
         },
         init: function () {
-          var twoPi = Math.PI * 2;
-          if (this.data.randomStart) {
-            var lonOff = (Math.random() * 2 - 1) * this.data.visibleLonHalfWidth;
-            this.wLon = this.data.visibleLonCenter + lonOff;
-            this.wLon = ((this.wLon % twoPi) + twoPi) % twoPi;
-            this.wLat =
-              this.data.latMin +
-              Math.random() * (this.data.latMax - this.data.latMin);
-          } else {
-            this.wLon =
-              ((this.data.startLongitude % twoPi) + twoPi) % twoPi;
-            this.wLat = THREE.MathUtils.clamp(
-              this.data.startLatitude,
-              this.data.latMin,
-              this.data.latMax
-            );
-          }
-          this.vLon = 0;
-          this.vLat = 0;
-          this.tgtVLon = 0;
-          this.tgtVLat = 0;
-          this.steerTimer = 2.6;
+          this.phase = this.data.startPhase;
+          this.prevLon = null;
+          this.prevLat = null;
           this.stridePhase = 0;
           this.lastFwd = new THREE.Vector3(1, 0, 0);
+          this.lowestFootY = -0.05;
+          this.updateFootAnchor();
+        },
+        updateFootAnchor: function () {
+          var legs = this.el.querySelectorAll(".giraffe-leg-fl, .giraffe-leg-fr, .giraffe-leg-bl, .giraffe-leg-br");
+          var lowest = Infinity;
+          for (var i = 0; i < legs.length; i++) {
+            var pos = legs[i].getAttribute("position") || {};
+            var height = parseFloat(legs[i].getAttribute("height") || "0");
+            var y = typeof pos.y === "number" ? pos.y : parseFloat(pos.y || "0");
+            lowest = Math.min(lowest, y - height / 2);
+          }
+          if (isFinite(lowest)) this.lowestFootY = lowest;
+        },
+        getGroundedHeightOffset: function () {
+          var scaleY = this.el.object3D.scale && this.el.object3D.scale.y ? this.el.object3D.scale.y : 1;
+          return this.data.heightOffset - this.lowestFootY * scaleY;
+        },
+        getPatrolPoint: function (phase) {
+          var d = this.data;
+          var latCenter = (d.latMin + d.latMax) * 0.5;
+          var latHalfRange = Math.max(0.001, (d.latMax - d.latMin) * 0.5);
+          return {
+            longitude:
+              d.visibleLonCenter +
+              Math.sin(phase) * d.visibleLonHalfWidth * 0.82,
+            latitude:
+              latCenter +
+              Math.sin(phase * 0.68 + 0.9) * latHalfRange * 0.72
+          };
         },
         tick: function (_, deltaMs) {
           var dt = Math.min(deltaMs / 1000, 0.07);
-          var twoPi = Math.PI * 2;
+          this.phase += dt * this.data.patrolSpeed;
 
-          this.steerTimer -= dt;
-          if (this.steerTimer <= 0) {
-            this.tgtVLon = (Math.random() - 0.5) * 2 * this.data.maxLonRate;
-            this.tgtVLat = (Math.random() - 0.5) * 2 * this.data.maxLatRate;
-            this.steerTimer = 2.2 + Math.random() * 5.5;
-          }
-
-          var follow = Math.min(1, 2.15 * dt);
-          this.vLon += (this.tgtVLon - this.vLon) * follow;
-          this.vLat += (this.tgtVLat - this.vLat) * follow;
-          this.vLon *= Math.pow(0.988, dt * 60);
-          this.vLat *= Math.pow(0.988, dt * 60);
-
-          this.wLon += this.vLon * dt;
-          this.wLon = ((this.wLon % twoPi) + twoPi) % twoPi;
-
-          this.wLat += this.vLat * dt;
-          if (this.wLat < this.data.latMin) {
-            this.wLat = this.data.latMin;
-            this.vLat *= -0.35;
-            this.tgtVLat = Math.abs(this.tgtVLat);
-          } else if (this.wLat > this.data.latMax) {
-            this.wLat = this.data.latMax;
-            this.vLat *= -0.35;
-            this.tgtVLat = -Math.abs(this.tgtVLat);
-          }
-
-          var longitude = this.wLon;
-          var latitude = this.wLat;
+          var current = this.getPatrolPoint(this.phase);
+          var ahead = this.getPatrolPoint(this.phase + 0.085);
+          var longitude = current.longitude;
+          var latitude = current.latitude;
 
           var cosLat = Math.cos(latitude);
           var normal = new THREE.Vector3(
@@ -4288,24 +4342,25 @@ triggerReach: function () {
             Math.cos(longitude) * cosLat
           ).normalize();
 
-          var speed = Math.sqrt(this.vLon * this.vLon + this.vLat * this.vLat);
-          var lonAhead =
-            ((this.wLon + this.vLon * 0.55 + (speed > 0.004 ? 0 : 0.018)) % twoPi + twoPi) % twoPi;
-          var latAhead = THREE.MathUtils.clamp(
-            this.wLat + this.vLat * 0.55 + (speed > 0.004 ? 0 : 0),
-            this.data.latMin,
-            this.data.latMax
-          );
+          var speed = 0;
+          if (this.prevLon !== null && dt > 0) {
+            var dLon = longitude - this.prevLon;
+            var dLat = latitude - this.prevLat;
+            speed = Math.sqrt(dLon * dLon + dLat * dLat) / dt;
+          }
+          this.prevLon = longitude;
+          this.prevLat = latitude;
 
-          var cosAhead = Math.cos(latAhead);
+          var cosAhead = Math.cos(ahead.latitude);
           var aheadNormal = new THREE.Vector3(
-            Math.sin(lonAhead) * cosAhead,
-            Math.sin(latAhead),
-            Math.cos(lonAhead) * cosAhead
+            Math.sin(ahead.longitude) * cosAhead,
+            Math.sin(ahead.latitude),
+            Math.cos(ahead.longitude) * cosAhead
           ).normalize();
 
-          var position = normal.clone().multiplyScalar(PLANET_RADIUS + this.data.heightOffset);
-          var nextPosition = aheadNormal.clone().multiplyScalar(PLANET_RADIUS + this.data.heightOffset);
+          var groundedHeightOffset = this.getGroundedHeightOffset();
+          var position = normal.clone().multiplyScalar(PLANET_RADIUS + groundedHeightOffset);
+          var nextPosition = aheadNormal.clone().multiplyScalar(PLANET_RADIUS + groundedHeightOffset);
 
           var forward = nextPosition.clone().sub(position);
           forward.sub(normal.clone().multiplyScalar(forward.dot(normal)));
@@ -4321,16 +4376,13 @@ triggerReach: function () {
           var right = new THREE.Vector3().crossVectors(normal, back).normalize();
           var matrix = new THREE.Matrix4().makeBasis(right, normal, back);
 
-          var strideBoost = THREE.MathUtils.clamp(speed / 0.028, 0, 1);
-          this.stridePhase += dt * (1.35 + speed * 54) * (0.18 + strideBoost * 0.92);
-
-          var bob = Math.abs(Math.sin(this.stridePhase)) * (0.018 + speed * 0.48);
+          var strideBoost = THREE.MathUtils.clamp(speed / 0.018, 0, 1);
+          this.stridePhase += dt * (0.82 + speed * 34) * (0.22 + strideBoost * 0.78);
 
           this.el.object3D.position.copy(position);
           this.el.object3D.quaternion.setFromRotationMatrix(matrix);
-          this.el.object3D.position.add(normal.clone().multiplyScalar(bob));
 
-          var swing = Math.sin(this.stridePhase) * 22 * Math.max(0.08, strideBoost);
+          var swing = Math.sin(this.stridePhase) * 14 * Math.max(0.1, strideBoost);
           var fl = this.el.querySelector(".giraffe-leg-fl");
           var fr = this.el.querySelector(".giraffe-leg-fr");
           var bl = this.el.querySelector(".giraffe-leg-bl");
@@ -4341,13 +4393,13 @@ triggerReach: function () {
           if (br) br.setAttribute("rotation", swing + " 0 -4");
           if (fr) fr.setAttribute("rotation", (-swing) + " 0 -4");
           if (bl) bl.setAttribute("rotation", (-swing) + " 0 4");
-          if (neck) neck.setAttribute("rotation", (Math.sin(this.stridePhase) * 5.5) + " 0 0");
+          if (neck) neck.setAttribute("rotation", (Math.sin(this.stridePhase) * 3.8) + " 0 0");
           if (head)
             head.setAttribute(
               "rotation",
-              Math.sin(this.stridePhase * 0.55) * 10 +
+              Math.sin(this.stridePhase * 0.55) * 7 +
                 " " +
-                Math.sin(this.stridePhase * 0.38) * 14 +
+                Math.sin(this.stridePhase * 0.38) * 9 +
                 " 0"
             );
         }
@@ -8214,6 +8266,14 @@ triggerReach: function () {
           );
           this.el.appendChild(this.infoText);
 
+          this.mapShape = this.makeCapsule("#25ff00");
+          this.mapText = document.createElement("a-entity");
+          this.mapText.setAttribute(
+            "troika-text",
+            "value: MAP; font: ./typefaces/ABCDiatypeRoundedEdu-Light.otf; color: #111111; anchor: center; baseline: middle"
+          );
+          this.el.appendChild(this.mapText);
+
           this.timeBox = this.makePlane("#949494");
           this.zoomPlusBox = this.makePlane("#949494");
           this.zoomMinusBox = this.makePlane("#949494");
@@ -8235,6 +8295,49 @@ triggerReach: function () {
           plane.setAttribute("material", "shader: flat; color: " + color + "; side: double");
           this.el.appendChild(plane);
           return plane;
+        },
+        makeCapsule: function (color) {
+          var entity = document.createElement("a-entity");
+          var THREE = AFRAME.THREE;
+          var material = new THREE.MeshBasicMaterial({
+            color: new THREE.Color(color),
+            side: THREE.DoubleSide
+          });
+          var mesh = new THREE.Mesh(new THREE.BufferGeometry(), material);
+          entity.object3D.add(mesh);
+          entity._capsuleMesh = mesh;
+          entity._capsuleRatio = 0;
+          this.el.appendChild(entity);
+          return entity;
+        },
+        capsuleGeometry: function (ratio) {
+          var THREE = AFRAME.THREE;
+          var width = Math.max(1.04, ratio || 2.1);
+          var height = 1;
+          var radius = height / 2;
+          var halfW = width / 2;
+          var halfH = height / 2;
+          var shape = new THREE.Shape();
+          shape.moveTo(-halfW + radius, -halfH);
+          shape.lineTo(halfW - radius, -halfH);
+          shape.absarc(halfW - radius, 0, radius, -Math.PI / 2, Math.PI / 2, false);
+          shape.lineTo(-halfW + radius, halfH);
+          shape.absarc(-halfW + radius, 0, radius, Math.PI / 2, Math.PI * 1.5, false);
+          return new THREE.ShapeGeometry(shape, 32);
+        },
+        setCapsule: function (entity, x, y, w, h) {
+          if (!entity || !entity._capsuleMesh) return;
+          var ratio = Math.max(1.04, w / Math.max(0.0001, h));
+          if (Math.abs((entity._capsuleRatio || 0) - ratio) > 0.02) {
+            if (entity._capsuleMesh.geometry) entity._capsuleMesh.geometry.dispose();
+            entity._capsuleMesh.geometry = this.capsuleGeometry(ratio);
+            entity._capsuleRatio = ratio;
+          }
+          entity.setAttribute("position", x + " " + y + " 0.002");
+          entity.object3D.scale.set(h, h, 1);
+          entity._capsuleBaseX = x;
+          entity._capsuleBaseY = y;
+          entity._capsuleBaseScale = h;
         },
         pad2: function (value) {
           return String(value).padStart(2, "0");
@@ -8346,9 +8449,11 @@ triggerReach: function () {
           var cssStatus = document.querySelector(".live-cam-status");
           var cssInfo = document.querySelector(".live-cam-information-button");
           var cssInfoText = document.querySelector(".live-cam-information-button span");
+          var cssMap = document.querySelector(".live-cam-map-button");
+          var cssMapText = document.querySelector(".live-cam-map-button span");
           var cssTime = document.querySelector(".live-cam-time");
           var cssZoomButtons = document.querySelectorAll(".live-cam-zoom-button");
-          if (cssCorners[0] && cssCorners[1] && cssCorners[2] && cssCorners[3] && cssDot && cssLiveText && cssStatus && cssInfo && cssInfoText && cssTime) {
+          if (cssCorners[0] && cssCorners[1] && cssCorners[2] && cssCorners[3] && cssDot && cssLiveText && cssStatus && cssInfo && cssInfoText && cssMap && cssMapText && cssTime) {
             var cornerIndex = 0;
             for (var ci = 0; ci < cssCorners.length; ci++) {
               var cEl = cssCorners[ci];
@@ -8444,6 +8549,24 @@ triggerReach: function () {
                 "; value: i; font: ./typefaces/Courgette-Regular.ttf; color: #111111; anchor: center; baseline: middle"
             );
 
+            var mapRect = cssMap.getBoundingClientRect();
+            var mapHud = this.cssRectToHud(mapRect, viewW, viewH, width, height);
+            var mapStyle = window.getComputedStyle(cssMap);
+            var mapFontSize = (parseFloat(mapStyle.fontSize) || 24) / height * viewH;
+            this.setCapsule(this.mapShape, mapHud.x, mapHud.y, mapHud.w, mapHud.h);
+            this.mapTextBaseX = mapHud.x;
+            this.mapTextBaseY = mapHud.y - mapFontSize * 0.075;
+            this.mapText.setAttribute(
+              "position",
+              this.mapTextBaseX + " " + this.mapTextBaseY + " 0.004"
+            );
+            this.mapText.setAttribute(
+              "troika-text",
+              "fontSize: " +
+                mapFontSize +
+                "; value: MAP; font: ./typefaces/ABCDiatypeRoundedEdu-Light.otf; color: #111111; anchor: center; baseline: middle"
+            );
+
             var timeRect = cssTime.getBoundingClientRect();
             var timeHud = this.cssRectToHud(timeRect, viewW, viewH, width, height);
             var timeStyle = window.getComputedStyle(cssTime);
@@ -8522,6 +8645,20 @@ triggerReach: function () {
               "; value: i; font: ./typefaces/Courgette-Regular.ttf; color: #111111; anchor: center; baseline: middle"
           );
 
+          var mapFallbackW = infoFallbackW;
+          var mapFallbackH = infoFallbackH;
+          var mapFallbackX = infoFallbackX + infoFallbackW / 2 + liveSize * 0.48 + mapFallbackW / 2;
+          this.setCapsule(this.mapShape, mapFallbackX, statusY, mapFallbackW, mapFallbackH);
+          this.mapTextBaseX = mapFallbackX;
+          this.mapTextBaseY = statusY - liveSize * 0.075;
+          this.mapText.setAttribute("position", this.mapTextBaseX + " " + this.mapTextBaseY + " 0.004");
+          this.mapText.setAttribute(
+            "troika-text",
+            "fontSize: " +
+              liveSize * 0.72 +
+              "; value: MAP; font: ./typefaces/ABCDiatypeRoundedEdu-Light.otf; color: #111111; anchor: center; baseline: middle"
+          );
+
           var timeX = Math.min(right - boxW / 2 - pad * 0.28, liveSize * 12.6);
           this.setPlane(this.timeBox, timeX, statusY, boxW, boxH);
           this.timeText.setAttribute("position", timeX + " " + (statusY - timeSize * 0.075) + " 0.004");
@@ -8583,6 +8720,25 @@ triggerReach: function () {
             this.infoText.object3D.scale.set(scaleBoost, scaleBoost, 1);
             this.infoEllipse.object3D.rotation.z = rot;
             this.infoText.object3D.rotation.z = rot;
+          }
+          if (this.mapShape && this.mapText && this.mapShape._capsuleBaseScale !== undefined) {
+            var mapButton = document.querySelector(".live-cam-map-button");
+            var mapHovering = !!(mapButton && mapButton.classList.contains("is-hovering"));
+            var mapHoverTarget = mapHovering ? 1 : 0;
+            this.mapHoverAmount += (mapHoverTarget - (this.mapHoverAmount || 0)) * 0.18;
+            var mapHover = this.mapHoverAmount || 0;
+            var mapRot = mapHover * THREE.MathUtils.degToRad(4);
+            var mapScaleBoost = 1 + mapHover * 0.32;
+            var mapBaseScale = this.mapShape._capsuleBaseScale;
+            this.mapShape.setAttribute(
+              "position",
+              this.mapShape._capsuleBaseX + " " + this.mapShape._capsuleBaseY + " 0.002"
+            );
+            this.mapText.setAttribute("position", this.mapTextBaseX + " " + this.mapTextBaseY + " 0.004");
+            this.mapShape.object3D.scale.set(mapBaseScale * mapScaleBoost, mapBaseScale * mapScaleBoost, 1);
+            this.mapText.object3D.scale.set(mapScaleBoost, mapScaleBoost, 1);
+            this.mapShape.object3D.rotation.z = mapRot;
+            this.mapText.object3D.rotation.z = mapRot;
           }
         }
       });
@@ -8683,6 +8839,100 @@ triggerReach: function () {
           </a-entity>
         </a-entity>
 
+        <!-- Hot air balloon: wanders around globe + planet-normal-up rig (see balloon-globe-orbit) -->
+        <a-entity
+          id="hotAirBalloon"
+          position="-5.15 9.55 -6.25"
+          balloon-globe-orbit="speed: 0.017; lonWobbleAmp: 0.055; lonWobbleFreq: 0.32; latAmp: 0.042; latFreq: 0.26; radiusAmp: 0.11; bobAmp: 0.065; bobFreq: 1.05">
+          <a-entity planet-normal-up>
+            <a-entity rotation="0 0 0" balloon-random-yaw="amplitude: 7; speed: 0.34; seed: 4.8">
+              <a-entity
+                animation__sway="property: rotation; dir: alternate; loop: true; dur: 9600; easing: easeInOutSine; from: 0 -11 0; to: 0 11 0">
+                <a-entity scale="0.845 0.845 0.845">
+                  <!-- Rig local +Y = toward envelope; −Y toward basket / ground -->
+                  <a-cone
+                    position="0 0.26 0"
+                    radius-top="0.43"
+                    radius-bottom="0.34"
+                    height="0.5"
+                    segments-radial="64"
+                    color="#6E4E38"
+                    material="shader: standard; roughness: 0.86; metalness: 0; side: double">
+                  </a-cone>
+                  <a-torus
+                    position="0 0.48 0"
+                    radius="0.43"
+                    radius-tubular="0.024"
+                    segments-radial="32"
+                    segments-tubular="72"
+                    rotation="90 0 0"
+                    color="#4A3426"
+                    material="shader: standard; roughness: 0.8; metalness: 0.06">
+                  </a-torus>
+                  <a-entity position="0 0.54 0">
+                    <a-cylinder
+                      position="0 0.16 0"
+                      radius="0.046"
+                      height="0.28"
+                      color="#3D3D3D"
+                      material="shader: standard; roughness: 0.36; metalness: 0.48">
+                    </a-cylinder>
+                    <a-cone
+                      position="0 0.42 0"
+                      radius-bottom="0.028"
+                      radius-top="0.13"
+                      height="0.44"
+                      color="#FF7A33"
+                      material="shader: standard; roughness: 0.26; metalness: 0; emissive: #FF5208; emissiveIntensity: 0.92"
+                      animation__flScale="property: scale; dir: alternate; loop: true; dur: 340; easing: easeInOutSine; from: 1 1 1; to: 1.18 1.32 1.18"
+                      animation__flEm="property: material.emissiveIntensity; dir: alternate; loop: true; dur: 280; easing: easeInOutSine; from: 0.68; to: 1.48">
+                    </a-cone>
+                    <a-sphere
+                      position="0 0.58 0"
+                      radius="0.1"
+                      color="#FFE08A"
+                      material="shader: standard; roughness: 0.2; metalness: 0; emissive: #FFDA44; emissiveIntensity: 1.15"
+                      animation__coreScale="property: scale; dir: alternate; loop: true; dur: 240; easing: easeInOutSine; from: 1 1 1; to: 1.32 1.42 1.32"
+                      animation__coreEm="property: material.emissiveIntensity; dir: alternate; loop: true; dur: 210; easing: easeInOutSine; from: 0.88; to: 2.1">
+                    </a-sphere>
+                    <a-sphere
+                      position="0 0.66 0"
+                      radius="0.048"
+                      color="#FFFDF5"
+                      material="shader: standard; roughness: 0.12; metalness: 0; emissive: #FFFFFF; emissiveIntensity: 1.85"
+                      animation__hotPulse="property: material.emissiveIntensity; dir: alternate; loop: true; dur: 165; easing: easeInOutSine; from: 1.2; to: 3">
+                    </a-sphere>
+                    <a-entity
+                      position="0 0.52 0"
+                      light="type: point; intensity: 0.52; distance: 5.2; decay: 1.95; color: #FFB347">
+                    </a-entity>
+                  </a-entity>
+                  <a-entity balloon-rig-ropes></a-entity>
+                  <!-- Front and back text decals projected onto the envelope. -->
+                  <a-sphere
+                    id="balloonEnvelope"
+                    position="0 2.61 0"
+                    radius="1.36"
+                    scale="0.93 1.24 0.93"
+                    segments-width="48"
+                    segments-height="32"
+                    color="#FF4FD8"
+                    material="shader: standard; roughness: 0.3; metalness: 0.06; emissive: #C9188E; emissiveIntensity: 0.14"
+                    balloon-envelope-phrase="horizontal-tan-scale: 0.46; vertical-tan-scale: 1.34; opposite-text: suneden.world; opposite-horizontal-tan-scale: 0.52; opposite-vertical-tan-scale: 1.25">
+                  </a-sphere>
+                  <!-- Front + back decals: aim from envelope center to each anchor (world). Opposite rig: parent Y rotated 180° from front (-72 → 108). -->
+                  <a-entity position="0 2.61 0" rotation="0 -72 0">
+                    <a-entity id="balloonPhraseAnchor" position="1.82 0.118 0" rotation="0 90 0"></a-entity>
+                  </a-entity>
+                  <a-entity position="0 2.61 0" rotation="0 108 0">
+                    <a-entity id="balloonPhraseAnchorOpposite" position="1.82 0.132 0" rotation="0 90 0"></a-entity>
+                  </a-entity>
+                </a-entity>
+              </a-entity>
+            </a-entity>
+          </a-entity>
+        </a-entity>
+
         <!-- Animated human walking around the house -->
         <a-entity id="human" human-house-walk="longitude: 0; latitude: 0.55; speed: 0.27" scale="1.74 1.74 1.74">
           <a-entity class="human-torso" position="0 0.45 0">
@@ -8753,6 +9003,22 @@ triggerReach: function () {
           <a-cone position="0 0 0.36" radius-bottom="0.19" radius-top="0.02" height="0.38" rotation="-90 0 0" color="#4A332B"></a-cone>
         </a-entity>
 
+        <!-- Giraffe roaming the southern “bottom” of the globe -->
+        <a-entity id="giraffe" giraffe-bottom-walk="latMin: -0.4; latMax: -0.3; visibleLonCenter: -0.48; visibleLonHalfWidth: 0.36; startPhase: 0.35; heightOffset: -0.006; patrolSpeed: 0.026" scale="2.12 2.12 2.12">
+          <a-box position="0 0.46 0" width="0.42" height="0.36" depth="0.56" color="#F4CA62" material="shader: standard; roughness: 0.66; metalness: 0"></a-box>
+          <a-cylinder class="giraffe-neck" position="0 0.86 -0.1" radius="0.072" height="0.64" color="#F2C555" material="shader: standard; roughness: 0.65; metalness: 0"></a-cylinder>
+          <a-sphere class="giraffe-head" position="0 1.28 -0.16" radius="0.13" color="#F0C24E" material="shader: standard; roughness: 0.64; metalness: 0"></a-sphere>
+          <a-sphere position="0.055 1.3 -0.275" radius="0.026" color="#4A3728" material="shader: standard; roughness: 0.45; metalness: 0.08"></a-sphere>
+          <a-sphere position="-0.055 1.3 -0.275" radius="0.026" color="#4A3728" material="shader: standard; roughness: 0.45; metalness: 0.08"></a-sphere>
+          <a-cylinder position="0.065 1.44 -0.14" radius="0.018" height="0.14" color="#6B5344" material="shader: standard; roughness: 0.68; metalness: 0"></a-cylinder>
+          <a-cylinder position="-0.065 1.44 -0.14" radius="0.018" height="0.14" color="#6B5344" material="shader: standard; roughness: 0.68; metalness: 0"></a-cylinder>
+          <a-cone position="0 1.255 -0.298" radius-bottom="0.049" radius-top="0" height="0.098" rotation="-90 0 0" color="#6B5344" material="shader: standard; roughness: 0.72; metalness: 0"></a-cone>
+          <a-cylinder class="giraffe-leg-fl" position="0.14 0.24 0.2" radius="0.052" height="0.58" color="#ECC455" material="shader: standard; roughness: 0.67; metalness: 0"></a-cylinder>
+          <a-cylinder class="giraffe-leg-fr" position="-0.14 0.24 0.2" radius="0.052" height="0.58" color="#ECC455" material="shader: standard; roughness: 0.67; metalness: 0"></a-cylinder>
+          <a-cylinder class="giraffe-leg-bl" position="0.14 0.24 -0.22" radius="0.052" height="0.58" color="#ECC455" material="shader: standard; roughness: 0.67; metalness: 0"></a-cylinder>
+          <a-cylinder class="giraffe-leg-br" position="-0.14 0.24 -0.22" radius="0.052" height="0.58" color="#ECC455" material="shader: standard; roughness: 0.67; metalness: 0"></a-cylinder>
+        </a-entity>
+
         <!-- Pink butterfly staying close to the house -->
         <a-entity id="butterfly" butterfly-house-orbit="longitude: 0; latitude: 0.55; radius: 12.55; speed: 0.9" scale="0.95 0.95 0.95">
           <a-sphere position="0 0 0" radius="0.055" scale="0.55 0.9 1.25" color="#5A2D45"></a-sphere>
@@ -8782,11 +9048,14 @@ triggerReach: function () {
         <a-entity id="liveCamVrHud" visible="false" live-cam-vr-hud></a-entity>
       </a-entity>
 
-      <div class="live-cam-overlay" aria-hidden="true">
+      <div class="live-cam-overlay" aria-hidden="false">
         <div class="live-cam-corner top-left"></div>
         <div class="live-cam-corner top-right"></div>
         <div class="live-cam-corner bottom-left"></div>
         <div class="live-cam-corner bottom-right"></div>
+        <a class="live-cam-map-button" href="./map.html" aria-label="Open 2D map">
+          <span>MAP</span>
+        </a>
         <button id="liveCamInformation" class="live-cam-information-button" type="button" aria-label="Information"><span>i</span></button>
         <div class="live-cam-status">
           <span class="live-cam-dot"></span>
@@ -8807,6 +9076,7 @@ triggerReach: function () {
         var liveCamTime = document.getElementById("liveCamTime");
         var liveCamOverlay = document.querySelector(".live-cam-overlay");
         var liveCamInformation = document.getElementById("liveCamInformation");
+        var liveCamMap = document.querySelector(".live-cam-map-button");
         var sceneEl = document.querySelector("a-scene");
         var liveCamVrHud = document.getElementById("liveCamVrHud");
         var INFORMATION_BUTTON_HOVER_ENABLED = true; // Exhibition touchscreen mode: set to true to restore mouse hover.
@@ -8870,6 +9140,45 @@ triggerReach: function () {
             event.clientY >= rect.top &&
             event.clientY <= rect.bottom
           );
+        }
+
+        function pointerIsOnMap(event) {
+          if (!liveCamMap) return false;
+          var rect = liveCamMap.getBoundingClientRect();
+          return (
+            event.clientX >= rect.left &&
+            event.clientX <= rect.right &&
+            event.clientY >= rect.top &&
+            event.clientY <= rect.bottom
+          );
+        }
+
+        function openMapPage(event) {
+          if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          window.location.href = liveCamMap ? liveCamMap.href : "./map.html";
+        }
+
+        if (liveCamMap) {
+          function syncMapHover(event) {
+            var isTouchPointer = event && event.pointerType === "touch";
+            var hovering = !!(sceneEl && sceneEl.is && sceneEl.is("vr-mode") && !isTouchPointer && pointerIsOnMap(event));
+            liveCamMap.classList.toggle("is-hovering", hovering);
+          }
+
+          liveCamMap.addEventListener("pointerdown", function (event) {
+            event.stopPropagation();
+          });
+          window.addEventListener("pointermove", syncMapHover, true);
+          window.addEventListener("pointerleave", function () {
+            liveCamMap.classList.remove("is-hovering");
+          }, true);
+          window.addEventListener("pointerdown", function (event) {
+            if (!(sceneEl && sceneEl.is && sceneEl.is("vr-mode"))) return;
+            if (pointerIsOnMap(event)) openMapPage(event);
+          }, true);
         }
 
         if (liveCamInformation) {
