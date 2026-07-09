@@ -210,7 +210,7 @@
         overflow: hidden;
       }
 
-      .live-cam-information-button.is-jiggling:not(.is-playing):not(:hover):not(.is-hovering) {
+      .live-cam-information-button.is-jiggling:not(.is-playing):not(.is-hovering) {
         animation: infoButtonJiggle 720ms ease-in-out 1;
       }
 
@@ -8809,7 +8809,7 @@ triggerReach: function () {
         var liveCamInformation = document.getElementById("liveCamInformation");
         var sceneEl = document.querySelector("a-scene");
         var liveCamVrHud = document.getElementById("liveCamVrHud");
-        var INFORMATION_BUTTON_HOVER_ENABLED = false; // Exhibition touchscreen mode: set to true to restore mouse hover.
+        var INFORMATION_BUTTON_HOVER_ENABLED = true; // Exhibition touchscreen mode: set to true to restore mouse hover.
         if (!liveCamTime) return;
 
         function pad2(value) {
@@ -8927,6 +8927,19 @@ triggerReach: function () {
             if (hovering && !wasHovering) playInformationHoverSound();
           }
 
+          function smoothInformationHoverFromJiggle() {
+            if (!liveCamInformation.classList.contains("is-jiggling")) return;
+            var currentTransform = window.getComputedStyle(liveCamInformation).transform;
+            liveCamInformation.style.transition = "none";
+            liveCamInformation.style.transform = currentTransform && currentTransform !== "none" ? currentTransform : "";
+            liveCamInformation.classList.remove("is-jiggling");
+            liveCamInformation.offsetWidth;
+            liveCamInformation.style.transition = "";
+            requestAnimationFrame(function () {
+              liveCamInformation.style.transform = "";
+            });
+          }
+
           function resetInformationTouchState() {
             liveCamInformation.classList.remove("is-hovering");
             liveCamInformation.classList.remove("is-jiggling");
@@ -8943,6 +8956,7 @@ triggerReach: function () {
             liveCamInformation.addEventListener("pointerenter", function (event) {
               if (event.pointerType !== "touch") {
                 releaseInformationTouchReset(event);
+                smoothInformationHoverFromJiggle();
                 playInformationHoverSound();
               }
             });
