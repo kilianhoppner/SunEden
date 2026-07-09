@@ -177,17 +177,26 @@
         transform-origin: 50% 50%;
         transform-box: border-box;
         will-change: transform;
-        transition: transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        box-shadow: none;
+        transition:
+          transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          box-shadow 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
       }
 
 
       .live-cam-information-button.is-hovering {
         transform: var(--info-base-transform) scale(1.32) rotate(-8deg);
+        box-shadow:
+          0 0 clamp(16px, 1.65vmin, 28px) rgba(255, 242, 0, 0.58),
+          0 0 clamp(40px, 3.5vmin, 62px) rgba(255, 242, 0, 0.3);
       }
 
       @media (hover: hover) and (pointer: fine) {
         .live-cam-information-button:hover {
           transform: var(--info-base-transform) scale(1.32) rotate(-8deg);
+          box-shadow:
+            0 0 clamp(16px, 1.65vmin, 28px) rgba(255, 242, 0, 0.58),
+            0 0 clamp(40px, 3.5vmin, 62px) rgba(255, 242, 0, 0.3);
         }
       }
 
@@ -265,7 +274,10 @@
         transform-origin: 50% 50%;
         transform-box: border-box;
         will-change: transform;
-        transition: transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        box-shadow: none;
+        transition:
+          transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          box-shadow 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
       }
 
       .live-cam-map-button span {
@@ -276,6 +288,9 @@
       .live-cam-map-button.is-hovering,
       .live-cam-map-button:hover {
         transform: var(--map-base-transform) scale(1.32) rotate(4deg);
+        box-shadow:
+          0 0 clamp(16px, 1.65vmin, 28px) rgba(37, 255, 0, 0.54),
+          0 0 clamp(40px, 3.5vmin, 62px) rgba(37, 255, 0, 0.28);
       }
 
       .live-cam-control-group {
@@ -2125,6 +2140,7 @@
           this.birdBuffer = null;
           this.sunedenBuffer = null;
           this.infoHoverBuffer = null;
+          this.mapHoverBuffer = null;
           this.footstepBuffer = null;
           this.pendingInformationSound = false;
           this.informationSource = null;
@@ -2269,7 +2285,7 @@
         },
         loadAudioBuffers: function () {
           if (!this.audioContext || this.fireBuffersLoading) return;
-          if (this.fireIntroBuffer && this.fireBedBuffer && this.riverBuffer && this.zoomBuffer && this.hiBuffer && this.armsBuffer && this.birdBuffer && this.sunedenBuffer && this.infoHoverBuffer && this.footstepBuffer) return;
+          if (this.fireIntroBuffer && this.fireBedBuffer && this.riverBuffer && this.zoomBuffer && this.hiBuffer && this.armsBuffer && this.birdBuffer && this.sunedenBuffer && this.infoHoverBuffer && this.mapHoverBuffer && this.footstepBuffer) return;
           var self = this;
           this.fireBuffersLoading = true;
           this.loadBuffer("audio/river.wav", function (buffer) {
@@ -2282,6 +2298,9 @@
           });
           this.loadBuffer("audio/hover.wav", function (buffer) {
             self.infoHoverBuffer = buffer;
+          });
+          this.loadBuffer("audio/hover2.wav", function (buffer) {
+            self.mapHoverBuffer = buffer;
           });
           this.loadBuffer("audio/footstep.wav", function (buffer) {
             self.footstepBuffer = buffer;
@@ -2724,7 +2743,7 @@ playBirdSqueak: function (position) {
           return (this.fireActive ? 1.45 : 1) * (this.informationSource ? 2.05 : 1);
         },
         playInfoHoverSound: function () {
-          this.playBufferAt(this.infoHoverBuffer, null, this.data.infoHoverVolume * this.hoverSoundBoost(), {
+          this.playBufferAt(this.infoHoverBuffer, null, this.data.infoHoverVolume * this.hoverSoundBoost() * 1.2, {
             distanceModel: "linear",
             refDistance: 1,
             maxDistance: 1,
@@ -2733,6 +2752,9 @@ playBirdSqueak: function (position) {
             release: 0.035,
             rate: 1.2
           });
+        },
+        playMapHoverSound: function () {
+          this.playBufferAt(this.mapHoverBuffer, null, this.data.infoHoverVolume * this.hoverSoundBoost() * 0.88);
         },
         startZoomLoop: function () {
           var ctx = this.ensureAudioContext();
@@ -8254,6 +8276,11 @@ triggerReach: function () {
           );
           this.el.appendChild(this.liveText);
 
+          this.infoGlow = document.createElement("a-circle");
+          this.infoGlow.setAttribute("geometry", "primitive: circle; radius: 0.5; segments: 128");
+          this.infoGlow.setAttribute("material", "shader: flat; color: #FFF200; opacity: 0.3; transparent: true; depthWrite: false; side: double");
+          this.el.appendChild(this.infoGlow);
+
           this.infoEllipse = document.createElement("a-circle");
           this.infoEllipse.setAttribute("geometry", "primitive: circle; radius: 0.5; segments: 128");
           this.infoEllipse.setAttribute("material", "shader: flat; color: #FFF200; side: double");
@@ -8266,6 +8293,7 @@ triggerReach: function () {
           );
           this.el.appendChild(this.infoText);
 
+          this.mapGlow = this.makeCapsule("#25ff00", 0.26);
           this.mapShape = this.makeCapsule("#25ff00");
           this.mapText = document.createElement("a-entity");
           this.mapText.setAttribute(
@@ -8296,12 +8324,15 @@ triggerReach: function () {
           this.el.appendChild(plane);
           return plane;
         },
-        makeCapsule: function (color) {
+        makeCapsule: function (color, opacity) {
           var entity = document.createElement("a-entity");
           var THREE = AFRAME.THREE;
           var material = new THREE.MeshBasicMaterial({
             color: new THREE.Color(color),
-            side: THREE.DoubleSide
+            side: THREE.DoubleSide,
+            transparent: opacity !== undefined,
+            opacity: opacity !== undefined ? opacity : 1,
+            depthWrite: opacity === undefined
           });
           var mesh = new THREE.Mesh(new THREE.BufferGeometry(), material);
           entity.object3D.add(mesh);
@@ -8537,9 +8568,11 @@ triggerReach: function () {
             this.infoTextBaseY = infoCenter.y - infoFontSize * 0.01;
             this.infoEllipseZ = 0.002;
             this.infoTextZ = 0.004;
+            this.infoGlow.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.001");
             this.infoEllipse.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.002");
             this.infoScaleX = infoCssWidth / width * viewW;
             this.infoScaleY = infoCssHeight / height * viewH;
+            this.infoGlow.setAttribute("scale", (this.infoScaleX * 1.42) + " " + (this.infoScaleY * 1.55) + " 1");
             this.infoEllipse.setAttribute("scale", this.infoScaleX + " " + this.infoScaleY + " 1");
             this.infoText.setAttribute("position", this.infoTextBaseX + " " + this.infoTextBaseY + " 0.004");
             this.infoText.setAttribute(
@@ -8553,6 +8586,8 @@ triggerReach: function () {
             var mapHud = this.cssRectToHud(mapRect, viewW, viewH, width, height);
             var mapStyle = window.getComputedStyle(cssMap);
             var mapFontSize = (parseFloat(mapStyle.fontSize) || 24) / height * viewH;
+            this.setCapsule(this.mapGlow, mapHud.x, mapHud.y, mapHud.w * 1.32, mapHud.h * 1.42);
+            this.mapGlow.setAttribute("position", mapHud.x + " " + mapHud.y + " 0.001");
             this.setCapsule(this.mapShape, mapHud.x, mapHud.y, mapHud.w, mapHud.h);
             this.mapTextBaseX = mapHud.x;
             this.mapTextBaseY = mapHud.y - mapFontSize * 0.075;
@@ -8633,9 +8668,11 @@ triggerReach: function () {
           this.infoTextBaseY = statusY - liveSize * 0.025;
           this.infoEllipseZ = 0.002;
           this.infoTextZ = 0.004;
+          this.infoGlow.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.001");
           this.infoEllipse.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.002");
           this.infoScaleX = infoFallbackW;
           this.infoScaleY = infoFallbackH;
+          this.infoGlow.setAttribute("scale", (this.infoScaleX * 1.42) + " " + (this.infoScaleY * 1.55) + " 1");
           this.infoEllipse.setAttribute("scale", this.infoScaleX + " " + this.infoScaleY + " 1");
           this.infoText.setAttribute("position", this.infoTextBaseX + " " + this.infoTextBaseY + " 0.004");
           this.infoText.setAttribute(
@@ -8648,6 +8685,8 @@ triggerReach: function () {
           var mapFallbackW = infoFallbackW;
           var mapFallbackH = infoFallbackH;
           var mapFallbackX = infoFallbackX + infoFallbackW / 2 + liveSize * 0.48 + mapFallbackW / 2;
+          this.setCapsule(this.mapGlow, mapFallbackX, statusY, mapFallbackW * 1.32, mapFallbackH * 1.42);
+          this.mapGlow.setAttribute("position", mapFallbackX + " " + statusY + " 0.001");
           this.setCapsule(this.mapShape, mapFallbackX, statusY, mapFallbackW, mapFallbackH);
           this.mapTextBaseX = mapFallbackX;
           this.mapTextBaseY = statusY - liveSize * 0.075;
@@ -8712,12 +8751,21 @@ triggerReach: function () {
             var hover = this.infoHoverAmount || 0;
             var rot = (1 - hover) * wave * THREE.MathUtils.degToRad(-5.2) + hover * THREE.MathUtils.degToRad(8);
             var scaleBoost = 1 + hover * 0.32;
+            var glowBoost = 1 + hover * 0.1;
+            if (this.infoGlow) {
+              this.infoGlow.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.001");
+              this.infoGlow.setAttribute("visible", hover > 0.01);
+            }
             this.infoEllipse.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.002");
             this.infoText.setAttribute("position", this.infoTextBaseX + " " + this.infoTextBaseY + " 0.004");
             if (this.infoScaleX && this.infoScaleY) {
+              if (this.infoGlow) {
+                this.infoGlow.object3D.scale.set(this.infoScaleX * 1.42 * scaleBoost * glowBoost, this.infoScaleY * 1.55 * scaleBoost * glowBoost, 1);
+              }
               this.infoEllipse.object3D.scale.set(this.infoScaleX * scaleBoost, this.infoScaleY * scaleBoost, 1);
             }
             this.infoText.object3D.scale.set(scaleBoost, scaleBoost, 1);
+            if (this.infoGlow) this.infoGlow.object3D.rotation.z = rot;
             this.infoEllipse.object3D.rotation.z = rot;
             this.infoText.object3D.rotation.z = rot;
           }
@@ -8729,7 +8777,21 @@ triggerReach: function () {
             var mapHover = this.mapHoverAmount || 0;
             var mapRot = mapHover * THREE.MathUtils.degToRad(4);
             var mapScaleBoost = 1 + mapHover * 0.32;
+            var mapGlowBoost = 1 + mapHover * 0.1;
             var mapBaseScale = this.mapShape._capsuleBaseScale;
+            if (this.mapGlow && this.mapGlow._capsuleBaseScale !== undefined) {
+              this.mapGlow.setAttribute("visible", mapHover > 0.01);
+              this.mapGlow.setAttribute(
+                "position",
+                this.mapGlow._capsuleBaseX + " " + this.mapGlow._capsuleBaseY + " 0.001"
+              );
+              this.mapGlow.object3D.scale.set(
+                this.mapGlow._capsuleBaseScale * mapScaleBoost * mapGlowBoost,
+                this.mapGlow._capsuleBaseScale * mapScaleBoost * mapGlowBoost,
+                1
+              );
+              this.mapGlow.object3D.rotation.z = mapRot;
+            }
             this.mapShape.setAttribute(
               "position",
               this.mapShape._capsuleBaseX + " " + this.mapShape._capsuleBaseY + " 0.002"
@@ -9162,12 +9224,26 @@ triggerReach: function () {
         }
 
         if (liveCamMap) {
+          var canUseMapPointerHover = !window.matchMedia || window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+          function playMapHoverSound() {
+            var audio = sceneEl && sceneEl.components && sceneEl.components["exhibition-audio"];
+            if (audio && audio.playMapHoverSound) audio.playMapHoverSound();
+          }
+
           function syncMapHover(event) {
+            var wasHovering = liveCamMap.classList.contains("is-hovering");
             var isTouchPointer = event && event.pointerType === "touch";
             var hovering = !!(sceneEl && sceneEl.is && sceneEl.is("vr-mode") && !isTouchPointer && pointerIsOnMap(event));
             liveCamMap.classList.toggle("is-hovering", hovering);
+            if (hovering && !wasHovering) playMapHoverSound();
           }
 
+          if (canUseMapPointerHover) {
+            liveCamMap.addEventListener("pointerenter", function (event) {
+              if (event.pointerType !== "touch") playMapHoverSound();
+            });
+          }
           liveCamMap.addEventListener("pointerdown", function (event) {
             event.stopPropagation();
           });
