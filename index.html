@@ -9115,7 +9115,7 @@ triggerReach: function () {
         <div class="live-cam-corner top-right"></div>
         <div class="live-cam-corner bottom-left"></div>
         <div class="live-cam-corner bottom-right"></div>
-        <a class="live-cam-map-button" href="./map.html" aria-label="Open 2D map">
+        <a class="live-cam-map-button" href="./map.html" target="_blank" rel="noopener" aria-label="Open 2D map">
           <span>MAP</span>
         </a>
         <button id="liveCamInformation" class="live-cam-information-button" type="button" aria-label="Information"><span>i</span></button>
@@ -9220,7 +9220,8 @@ triggerReach: function () {
             event.preventDefault();
             event.stopPropagation();
           }
-          window.location.href = liveCamMap ? liveCamMap.href : "./map.html";
+          var mapUrl = liveCamMap ? liveCamMap.href : "./map.html";
+          window.open(mapUrl, "_blank", "noopener");
         }
 
         if (liveCamMap) {
