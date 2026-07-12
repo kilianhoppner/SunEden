@@ -98,7 +98,7 @@
 
       .live-cam-status {
         position: absolute;
-        top: calc(clamp(32px, 4.55vmin, 57px) - 3px);
+        top: calc(clamp(32px, 4.55vmin, 57px) - 1px);
         left: 50%;
         display: flex;
         align-items: center;
@@ -143,14 +143,69 @@
       }
 
 
+      .live-cam-battery {
+        position: absolute;
+        top: calc(clamp(32px, 4.55vmin, 53px) - 1px);
+        left: clamp(125px, 10vw, 190px);
+        z-index: 2;
+        width: clamp(78px, 5.72vmin, 110px);
+        height: clamp(38px, 3.2vmin, 52px);
+        display: flex;
+        align-items: center;
+        pointer-events: none;
+      }
+
+      .live-cam-battery-body {
+        box-sizing: border-box;
+        height: 100%;
+        flex: 1 1 auto;
+        padding: clamp(4.5px, 0.38vmin, 7.2px);
+        border-radius: clamp(8.1px, 0.74vmin, 13.5px);
+        background: #3F5F6B;
+      }
+
+      .live-cam-battery-inner {
+        box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(3.6px, 0.41vmin, 7.2px);
+        padding: clamp(3.6px, 0.38vmin, 6.3px);
+        border-radius: clamp(4.5px, 0.4vmin, 7.2px);
+        background: #F5F5F5;
+      }
+
+      .live-cam-battery-cell {
+        display: block;
+        background: #49B84A;
+      }
+
+      .live-cam-battery-cell:first-child {
+        border-radius: clamp(3.6px, 0.34vmin, 6.3px) 0 0 clamp(3.6px, 0.34vmin, 6.3px);
+      }
+
+      .live-cam-battery-cell:last-child {
+        border-radius: 0 clamp(3.6px, 0.34vmin, 6.3px) clamp(3.6px, 0.34vmin, 6.3px) 0;
+      }
+
+      .live-cam-battery-terminal {
+        width: clamp(6.3px, 0.54vmin, 9.9px);
+        height: 44%;
+        flex: 0 0 auto;
+        margin-left: -1px;
+        border-radius: 0 clamp(3.6px, 0.34vmin, 6.3px) clamp(3.6px, 0.34vmin, 6.3px) 0;
+        background: #3F5F6B;
+      }
+
       .live-cam-information-button {
         appearance: none;
         position: absolute;
-        top: calc(clamp(32px, 4.55vmin, 53px) - 3px);
-        left: clamp(125px, 10vw, 190px);
+        top: calc(clamp(32px, 4.55vmin, 53px) - 1px);
+        left: calc(clamp(125px, 10vw, 190px) + clamp(78px, 5.72vmin, 110px) + clamp(18px, 1.66vmin, 27px));
         z-index: 2;
-        width: clamp(86px, 6.35vmin, 122px);
-        height: clamp(42px, 3.55vmin, 58px);
+        width: clamp(78px, 5.72vmin, 110px);
+        height: clamp(38px, 3.2vmin, 52px);
         padding: 0;
         border: 0;
         border-radius: 50%;
@@ -168,7 +223,7 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         -webkit-text-stroke: 0 transparent;
-        font-size: clamp(34px, 2.95vmin, 48px);
+        font-size: clamp(31px, 2.65vmin, 43px);
         line-height: 1;
         letter-spacing: 0;
         pointer-events: auto;
@@ -186,17 +241,11 @@
 
       .live-cam-information-button.is-hovering {
         transform: var(--info-base-transform) scale(1.32) rotate(-8deg);
-        box-shadow:
-          0 0 clamp(16px, 1.65vmin, 28px) rgba(255, 242, 0, 0.58),
-          0 0 clamp(40px, 3.5vmin, 62px) rgba(255, 242, 0, 0.3);
       }
 
       @media (hover: hover) and (pointer: fine) {
         .live-cam-information-button:hover {
           transform: var(--info-base-transform) scale(1.32) rotate(-8deg);
-          box-shadow:
-            0 0 clamp(16px, 1.65vmin, 28px) rgba(255, 242, 0, 0.58),
-            0 0 clamp(40px, 3.5vmin, 62px) rgba(255, 242, 0, 0.3);
         }
       }
 
@@ -242,14 +291,14 @@
       .live-cam-map-button {
         appearance: none;
         position: absolute;
-        top: calc(clamp(32px, 4.55vmin, 53px) - 3px);
-        left: calc(clamp(125px, 10vw, 190px) + clamp(86px, 6.35vmin, 122px) + clamp(20px, 1.85vmin, 30px));
+        top: calc(clamp(32px, 4.55vmin, 53px) - 1px);
+        left: calc(clamp(125px, 10vw, 190px) + clamp(78px, 5.72vmin, 110px) + clamp(78px, 5.72vmin, 110px) + clamp(18px, 1.66vmin, 27px) + clamp(18px, 1.66vmin, 27px));
         z-index: 2;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: clamp(86px, 6.35vmin, 122px);
-        height: clamp(42px, 3.55vmin, 58px);
+        width: clamp(78px, 5.72vmin, 110px);
+        height: clamp(38px, 3.2vmin, 52px);
         padding: 0;
         border: 0;
         border-radius: 999px;
@@ -265,7 +314,7 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         -webkit-text-stroke: 0 transparent;
-        font-size: clamp(24px, 2.05vmin, 34px);
+        font-size: clamp(22px, 1.85vmin, 31px);
         line-height: 1;
         letter-spacing: 0;
         white-space: nowrap;
@@ -288,9 +337,6 @@
       .live-cam-map-button.is-hovering,
       .live-cam-map-button:hover {
         transform: var(--map-base-transform) scale(1.32) rotate(4deg);
-        box-shadow:
-          0 0 clamp(16px, 1.65vmin, 28px) rgba(37, 255, 0, 0.54),
-          0 0 clamp(40px, 3.5vmin, 62px) rgba(37, 255, 0, 0.28);
       }
 
       .live-cam-control-group {
@@ -408,7 +454,7 @@
         }
 
         .live-cam-status {
-          top: calc(clamp(33.92px, 4.823vmin, 60.42px) - 3.18px);
+          top: calc(clamp(33.92px, 4.823vmin, 60.42px) - 1.18px);
           gap: clamp(11.13px, 1.3038vmin, 18.02px);
           font-size: clamp(33.92px, 3.3708vmin, 58.3px);
         }
@@ -423,20 +469,27 @@
           transform: translateY(1.06px);
         }
 
-        .live-cam-information-button {
-          top: calc(clamp(33.92px, 4.823vmin, 56.18px) - 3.18px);
+        .live-cam-battery {
+          top: calc(clamp(33.92px, 4.823vmin, 56.18px) - 1.18px);
           left: clamp(132.5px, 10.6vw, 201.4px);
-          width: clamp(91.16px, 6.731vmin, 129.32px);
-          height: clamp(44.52px, 3.763vmin, 61.48px);
-          font-size: clamp(36.04px, 3.127vmin, 50.88px);
+          width: clamp(82.68px, 6.063vmin, 116.6px);
+          height: clamp(40.28px, 3.392vmin, 55.12px);
+        }
+
+        .live-cam-information-button {
+          top: calc(clamp(33.92px, 4.823vmin, 56.18px) - 1.18px);
+          left: calc(clamp(132.5px, 10.6vw, 201.4px) + clamp(82.68px, 6.063vmin, 116.6px) + clamp(19.08px, 1.765vmin, 28.62px));
+          width: clamp(82.68px, 6.063vmin, 116.6px);
+          height: clamp(40.28px, 3.392vmin, 55.12px);
+          font-size: clamp(32.86px, 2.809vmin, 45.58px);
         }
 
         .live-cam-map-button {
-          top: calc(clamp(33.92px, 4.823vmin, 56.18px) - 3.18px);
-          left: calc(clamp(132.5px, 10.6vw, 201.4px) + clamp(91.16px, 6.731vmin, 129.32px) + clamp(21.2px, 1.961vmin, 31.8px));
-          width: clamp(91.16px, 6.731vmin, 129.32px);
-          height: clamp(44.52px, 3.763vmin, 61.48px);
-          font-size: clamp(25.44px, 2.173vmin, 36.04px);
+          top: calc(clamp(33.92px, 4.823vmin, 56.18px) - 1.18px);
+          left: calc(clamp(132.5px, 10.6vw, 201.4px) + clamp(82.68px, 6.063vmin, 116.6px) + clamp(82.68px, 6.063vmin, 116.6px) + clamp(19.08px, 1.765vmin, 28.62px) + clamp(19.08px, 1.765vmin, 28.62px));
+          width: clamp(82.68px, 6.063vmin, 116.6px);
+          height: clamp(40.28px, 3.392vmin, 55.12px);
+          font-size: clamp(23.32px, 1.961vmin, 32.86px);
         }
 
         .live-cam-information-button span {
@@ -467,16 +520,21 @@
       }
 
       @media (min-width: 761px) and (max-width: 1180px) {
-        .live-cam-information-button {
-          top: calc(clamp(32px, 4.55vmin, 53px) - 3px);
-          bottom: auto;
+        .live-cam-battery {
+          top: calc(clamp(32px, 4.55vmin, 53px) - 1px);
           left: clamp(125px, 10vw, 190px);
+        }
+
+        .live-cam-information-button {
+          top: calc(clamp(32px, 4.55vmin, 53px) - 1px);
+          bottom: auto;
+          left: calc(clamp(125px, 10vw, 190px) + clamp(78px, 5.72vmin, 110px) + clamp(18px, 1.66vmin, 27px));
           --info-base-transform: translateX(0);
         }
 
         .live-cam-map-button {
-          top: calc(clamp(32px, 4.55vmin, 53px) - 3px);
-          left: calc(clamp(125px, 10vw, 190px) + clamp(86px, 6.35vmin, 122px) + clamp(20px, 1.85vmin, 30px));
+          top: calc(clamp(32px, 4.55vmin, 53px) - 1px);
+          left: calc(clamp(125px, 10vw, 190px) + clamp(78px, 5.72vmin, 110px) + clamp(78px, 5.72vmin, 110px) + clamp(18px, 1.66vmin, 27px) + clamp(18px, 1.66vmin, 27px));
         }
 
         .live-cam-control-group {
@@ -497,7 +555,7 @@
         }
 
         .live-cam-status {
-          top: calc(clamp(34px, 4.8vmin, 66px) + clamp(30px, 2.92vmin, 48px) + clamp(9px, 1.08vmin, 14px));
+          top: calc(clamp(34px, 4.8vmin, 66px) + clamp(30px, 2.92vmin, 48px) + clamp(9px, 1.08vmin, 14px) + 2px);
         }
 
         .live-cam-zoom-controls {
@@ -509,10 +567,18 @@
       }
 
       @media (max-width: 760px) {
+        .live-cam-battery {
+          top: auto;
+          bottom: calc(clamp(32px, 4.55vmin, 53px) + 2px + clamp(10px, 1.4vmin, 20px));
+          left: calc(50% - clamp(76px, 19.2vw, 108px) - (clamp(76px, 19.2vw, 108px) / 2) - clamp(18px, 4vw, 26px));
+          width: clamp(76px, 19.2vw, 108px);
+          height: clamp(38px, 9.2vw, 54px);
+        }
+
         .live-cam-information-button {
           top: auto;
           bottom: calc(clamp(32px, 4.55vmin, 53px) + 2px + clamp(10px, 1.4vmin, 20px));
-          left: calc(50% - (clamp(76px, 19.2vw, 108px) + clamp(18px, 4vw, 26px)) / 2);
+          left: 50%;
           --info-base-transform: translateX(-50%);
           width: clamp(76px, 19.2vw, 108px);
           height: clamp(38px, 9.2vw, 54px);
@@ -522,7 +588,7 @@
         .live-cam-map-button {
           top: auto;
           bottom: calc(clamp(32px, 4.55vmin, 53px) + 2px + clamp(10px, 1.4vmin, 20px));
-          left: calc(50% + clamp(18px, 4vw, 26px) / 2);
+          left: calc(50% + clamp(76px, 19.2vw, 108px) / 2 + clamp(18px, 4vw, 26px));
           width: clamp(76px, 19.2vw, 108px);
           height: clamp(38px, 9.2vw, 54px);
           font-size: clamp(21px, 5.4vw, 30px);
@@ -8276,9 +8342,24 @@ triggerReach: function () {
           );
           this.el.appendChild(this.liveText);
 
+          this.batteryBody = this.makeRoundedRect("#3F5F6B", undefined, "all");
+          this.batteryTerminal = this.makeRoundedRect("#3F5F6B", undefined, "right");
+          this.batteryInner = this.makeRoundedRect("#F5F5F5", undefined, "all");
+          this.batteryCells = [];
+          for (var bi = 0; bi < 4; bi++) {
+            this.batteryCells.push(this.makeRoundedRect("#49B84A", undefined, bi === 0 ? "left" : bi === 3 ? "right" : "none"));
+          }
+
+          this.infoGlowOuter = document.createElement("a-circle");
+          this.infoGlowOuter.setAttribute("geometry", "primitive: circle; radius: 0.5; segments: 128");
+          this.infoGlowOuter.setAttribute("material", "shader: flat; color: #FFF200; opacity: 0.055; transparent: true; depthWrite: false; blending: additive; side: double");
+          this.infoGlowOuter.setAttribute("visible", "false");
+          this.el.appendChild(this.infoGlowOuter);
+
           this.infoGlow = document.createElement("a-circle");
           this.infoGlow.setAttribute("geometry", "primitive: circle; radius: 0.5; segments: 128");
-          this.infoGlow.setAttribute("material", "shader: flat; color: #FFF200; opacity: 0.3; transparent: true; depthWrite: false; side: double");
+          this.infoGlow.setAttribute("material", "shader: flat; color: #FFF200; opacity: 0.12; transparent: true; depthWrite: false; blending: additive; side: double");
+          this.infoGlow.setAttribute("visible", "false");
           this.el.appendChild(this.infoGlow);
 
           this.infoEllipse = document.createElement("a-circle");
@@ -8293,7 +8374,10 @@ triggerReach: function () {
           );
           this.el.appendChild(this.infoText);
 
-          this.mapGlow = this.makeCapsule("#25ff00", 0.26);
+          this.mapGlowOuter = this.makeCapsule("#25ff00", 0.055);
+          this.mapGlowOuter.setAttribute("visible", "false");
+          this.mapGlow = this.makeCapsule("#25ff00", 0.12);
+          this.mapGlow.setAttribute("visible", "false");
           this.mapShape = this.makeCapsule("#25ff00");
           this.mapText = document.createElement("a-entity");
           this.mapText.setAttribute(
@@ -8332,7 +8416,8 @@ triggerReach: function () {
             side: THREE.DoubleSide,
             transparent: opacity !== undefined,
             opacity: opacity !== undefined ? opacity : 1,
-            depthWrite: opacity === undefined
+            depthWrite: opacity === undefined,
+            blending: opacity !== undefined ? THREE.AdditiveBlending : THREE.NormalBlending
           });
           var mesh = new THREE.Mesh(new THREE.BufferGeometry(), material);
           entity.object3D.add(mesh);
@@ -8340,6 +8425,105 @@ triggerReach: function () {
           entity._capsuleRatio = 0;
           this.el.appendChild(entity);
           return entity;
+        },
+        makeRoundedRect: function (color, opacity, corners) {
+          var entity = document.createElement("a-entity");
+          var THREE = AFRAME.THREE;
+          var material = new THREE.MeshBasicMaterial({
+            color: new THREE.Color(color),
+            side: THREE.DoubleSide,
+            transparent: opacity !== undefined,
+            opacity: opacity !== undefined ? opacity : 1,
+            depthWrite: opacity === undefined
+          });
+          var mesh = new THREE.Mesh(new THREE.BufferGeometry(), material);
+          entity.object3D.add(mesh);
+          entity._roundedRectMesh = mesh;
+          entity._roundedRectRatio = 0;
+          entity._roundedRectRadius = -1;
+          entity._roundedRectCorners = corners || "all";
+          this.el.appendChild(entity);
+          return entity;
+        },
+        roundedRectGeometry: function (ratio, radiusRatio, corners) {
+          var THREE = AFRAME.THREE;
+          var width = Math.max(0.001, ratio || 2.1);
+          var height = 1;
+          var halfW = width / 2;
+          var halfH = height / 2;
+          var r = Math.max(0, Math.min(radiusRatio || 0, 0.5, halfW));
+          var cornerSet = {
+            tl: corners === "all" || corners === "left",
+            tr: corners === "all" || corners === "right",
+            br: corners === "all" || corners === "right",
+            bl: corners === "all" || corners === "left"
+          };
+          if (corners === "none") {
+            cornerSet.tl = cornerSet.tr = cornerSet.br = cornerSet.bl = false;
+          }
+          var shape = new THREE.Shape();
+          shape.moveTo(-halfW + (cornerSet.bl ? r : 0), -halfH);
+          shape.lineTo(halfW - (cornerSet.br ? r : 0), -halfH);
+          if (cornerSet.br && r > 0) shape.absarc(halfW - r, -halfH + r, r, -Math.PI / 2, 0, false);
+          else shape.lineTo(halfW, -halfH);
+          shape.lineTo(halfW, halfH - (cornerSet.tr ? r : 0));
+          if (cornerSet.tr && r > 0) shape.absarc(halfW - r, halfH - r, r, 0, Math.PI / 2, false);
+          else shape.lineTo(halfW, halfH);
+          shape.lineTo(-halfW + (cornerSet.tl ? r : 0), halfH);
+          if (cornerSet.tl && r > 0) shape.absarc(-halfW + r, halfH - r, r, Math.PI / 2, Math.PI, false);
+          else shape.lineTo(-halfW, halfH);
+          shape.lineTo(-halfW, -halfH + (cornerSet.bl ? r : 0));
+          if (cornerSet.bl && r > 0) shape.absarc(-halfW + r, -halfH + r, r, Math.PI, Math.PI * 1.5, false);
+          else shape.lineTo(-halfW, -halfH);
+          return new THREE.ShapeGeometry(shape, 32);
+        },
+        setRoundedRect: function (entity, x, y, w, h, radiusRatio) {
+          if (!entity || !entity._roundedRectMesh) return;
+          var ratio = Math.max(0.001, w / Math.max(0.0001, h));
+          var radius = Math.max(0, Math.min(radiusRatio || 0, 0.5));
+          if (
+            Math.abs((entity._roundedRectRatio || 0) - ratio) > 0.02 ||
+            Math.abs((entity._roundedRectRadius || 0) - radius) > 0.01
+          ) {
+            if (entity._roundedRectMesh.geometry) entity._roundedRectMesh.geometry.dispose();
+            entity._roundedRectMesh.geometry = this.roundedRectGeometry(ratio, radius, entity._roundedRectCorners || "all");
+            entity._roundedRectRatio = ratio;
+            entity._roundedRectRadius = radius;
+          }
+          entity.setAttribute("position", x + " " + y + " 0.002");
+          entity.object3D.scale.set(h, h, 1);
+        },
+        cubicBezierY: function (t, x1, y1, x2, y2) {
+          t = THREE.MathUtils.clamp(t, 0, 1);
+          var s = t;
+          for (var i = 0; i < 5; i++) {
+            var inv = 1 - s;
+            var x = 3 * inv * inv * s * x1 + 3 * inv * s * s * x2 + s * s * s;
+            var dx = 3 * inv * inv * x1 + 6 * inv * s * (x2 - x1) + 3 * s * s * (1 - x2);
+            if (Math.abs(dx) < 0.0001) break;
+            s -= (x - t) / dx;
+            s = THREE.MathUtils.clamp(s, 0, 1);
+          }
+          var invS = 1 - s;
+          return 3 * invS * invS * s * y1 + 3 * invS * s * s * y2 + s * s * s;
+        },
+        cssHoverAmount: function (prefix, target, nowMs) {
+          var targetKey = prefix + "HoverTarget";
+          var fromKey = prefix + "HoverFrom";
+          var startKey = prefix + "HoverStart";
+          var amountKey = prefix + "HoverAmount";
+          target = target ? 1 : 0;
+          if (this[targetKey] !== target) {
+            this[targetKey] = target;
+            this[fromKey] = this[amountKey] || 0;
+            this[startKey] = nowMs;
+          }
+          var t = (nowMs - (this[startKey] || nowMs)) / 360;
+          var eased = this.cubicBezierY(t, 0.2, 0.8, 0.2, 1);
+          var amount = (this[fromKey] || 0) + (target - (this[fromKey] || 0)) * eased;
+          if (t >= 1) amount = target;
+          this[amountKey] = amount;
+          return amount;
         },
         capsuleGeometry: function (ratio) {
           var THREE = AFRAME.THREE;
@@ -8478,13 +8662,17 @@ triggerReach: function () {
           var cssDot = document.querySelector(".live-cam-dot");
           var cssLiveText = document.querySelector(".live-cam-status span:last-child");
           var cssStatus = document.querySelector(".live-cam-status");
+          var cssBatteryBody = document.querySelector(".live-cam-battery-body");
+          var cssBatteryInner = document.querySelector(".live-cam-battery-inner");
+          var cssBatteryTerminal = document.querySelector(".live-cam-battery-terminal");
+          var cssBatteryCells = document.querySelectorAll(".live-cam-battery-cell");
           var cssInfo = document.querySelector(".live-cam-information-button");
           var cssInfoText = document.querySelector(".live-cam-information-button span");
           var cssMap = document.querySelector(".live-cam-map-button");
           var cssMapText = document.querySelector(".live-cam-map-button span");
           var cssTime = document.querySelector(".live-cam-time");
           var cssZoomButtons = document.querySelectorAll(".live-cam-zoom-button");
-          if (cssCorners[0] && cssCorners[1] && cssCorners[2] && cssCorners[3] && cssDot && cssLiveText && cssStatus && cssInfo && cssInfoText && cssMap && cssMapText && cssTime) {
+          if (cssCorners[0] && cssCorners[1] && cssCorners[2] && cssCorners[3] && cssDot && cssLiveText && cssStatus && cssBatteryBody && cssBatteryInner && cssBatteryTerminal && cssBatteryCells.length === 4 && cssInfo && cssInfoText && cssMap && cssMapText && cssTime) {
             var cornerIndex = 0;
             for (var ci = 0; ci < cssCorners.length; ci++) {
               var cEl = cssCorners[ci];
@@ -8549,6 +8737,40 @@ triggerReach: function () {
                 "; value: live cam; font: ./typefaces/ABCDiatypeRoundedEdu-Light.otf; color: #111111; anchor: left; baseline: middle"
             );
 
+            var batteryBodyRect = cssBatteryBody.getBoundingClientRect();
+            var batteryInnerRect = cssBatteryInner.getBoundingClientRect();
+            var batteryTerminalRect = cssBatteryTerminal.getBoundingClientRect();
+            var batteryBodyStyle = window.getComputedStyle(cssBatteryBody);
+            var batteryInnerStyle = window.getComputedStyle(cssBatteryInner);
+            var batteryTerminalStyle = window.getComputedStyle(cssBatteryTerminal);
+            var batteryBodyRadius = (parseFloat(batteryBodyStyle.borderTopLeftRadius) || 0) / Math.max(1, batteryBodyRect.height);
+            var batteryInnerRadius = (parseFloat(batteryInnerStyle.borderTopLeftRadius) || 0) / Math.max(1, batteryInnerRect.height);
+            var batteryTerminalRadius = (parseFloat(batteryTerminalStyle.borderTopRightRadius) || 0) / Math.max(1, batteryTerminalRect.height);
+            var batteryBodyHud = this.cssRectToHud(batteryBodyRect, viewW, viewH, width, height);
+            var batteryInnerHud = this.cssRectToHud(batteryInnerRect, viewW, viewH, width, height);
+            var batteryTerminalHud = this.cssRectToHud(batteryTerminalRect, viewW, viewH, width, height);
+            var batteryInsetNudgeX = 0.35 / width * viewW;
+            var batteryInsetNudgeY = -0.35 / height * viewH;
+            this.setRoundedRect(this.batteryBody, batteryBodyHud.x, batteryBodyHud.y, batteryBodyHud.w, batteryBodyHud.h, batteryBodyRadius);
+            this.batteryBody.setAttribute("position", batteryBodyHud.x + " " + batteryBodyHud.y + " 0.001");
+            this.setRoundedRect(this.batteryInner, batteryInnerHud.x + batteryInsetNudgeX, batteryInnerHud.y + batteryInsetNudgeY, batteryInnerHud.w, batteryInnerHud.h, batteryInnerRadius);
+            this.batteryInner.setAttribute("position", (batteryInnerHud.x + batteryInsetNudgeX) + " " + (batteryInnerHud.y + batteryInsetNudgeY) + " 0.003");
+            this.setRoundedRect(this.batteryTerminal, batteryTerminalHud.x, batteryTerminalHud.y, batteryTerminalHud.w, batteryTerminalHud.h, batteryTerminalRadius);
+            this.batteryTerminal.setAttribute("position", batteryTerminalHud.x + " " + batteryTerminalHud.y + " 0.0025");
+            for (var bc = 0; bc < this.batteryCells.length; bc++) {
+              var cellRect = cssBatteryCells[bc].getBoundingClientRect();
+              var cellStyle = window.getComputedStyle(cssBatteryCells[bc]);
+              var cellRadius = Math.max(
+                parseFloat(cellStyle.borderTopLeftRadius) || 0,
+                parseFloat(cellStyle.borderTopRightRadius) || 0,
+                parseFloat(cellStyle.borderBottomRightRadius) || 0,
+                parseFloat(cellStyle.borderBottomLeftRadius) || 0
+              ) / Math.max(1, cellRect.height);
+              var cellHud = this.cssRectToHud(cellRect, viewW, viewH, width, height);
+              this.setRoundedRect(this.batteryCells[bc], cellHud.x + batteryInsetNudgeX, cellHud.y + batteryInsetNudgeY, cellHud.w, cellHud.h, cellRadius);
+              this.batteryCells[bc].setAttribute("position", (cellHud.x + batteryInsetNudgeX) + " " + (cellHud.y + batteryInsetNudgeY) + " 0.004");
+            }
+
             var infoRect = cssInfo.getBoundingClientRect();
             var infoCenter = this.cssPointToHud(
               infoRect.left + infoRect.width / 2,
@@ -8568,6 +8790,10 @@ triggerReach: function () {
             this.infoTextBaseY = infoCenter.y - infoFontSize * 0.01;
             this.infoEllipseZ = 0.002;
             this.infoTextZ = 0.004;
+            if (this.infoGlowOuter) {
+              this.infoGlowOuter.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.0008");
+              this.infoGlowOuter.setAttribute("scale", (this.infoScaleX * 1.95) + " " + (this.infoScaleY * 2.12) + " 1");
+            }
             this.infoGlow.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.001");
             this.infoEllipse.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.002");
             this.infoScaleX = infoCssWidth / width * viewW;
@@ -8586,6 +8812,10 @@ triggerReach: function () {
             var mapHud = this.cssRectToHud(mapRect, viewW, viewH, width, height);
             var mapStyle = window.getComputedStyle(cssMap);
             var mapFontSize = (parseFloat(mapStyle.fontSize) || 24) / height * viewH;
+            if (this.mapGlowOuter) {
+              this.setCapsule(this.mapGlowOuter, mapHud.x, mapHud.y, mapHud.w * 1.76, mapHud.h * 1.92);
+              this.mapGlowOuter.setAttribute("position", mapHud.x + " " + mapHud.y + " 0.0008");
+            }
             this.setCapsule(this.mapGlow, mapHud.x, mapHud.y, mapHud.w * 1.32, mapHud.h * 1.42);
             this.mapGlow.setAttribute("position", mapHud.x + " " + mapHud.y + " 0.001");
             this.setCapsule(this.mapShape, mapHud.x, mapHud.y, mapHud.w, mapHud.h);
@@ -8661,13 +8891,37 @@ triggerReach: function () {
 
           var infoFallbackW = Math.max(corner * 1.02, liveSize * 1.92);
           var infoFallbackH = Math.max(thick * 5.6, liveSize * 1.0);
-          var infoFallbackX = left + corner + pad * 0.78 + infoFallbackW / 2;
+          var fallbackGap = liveSize * 0.48;
+          var batteryFallbackW = infoFallbackW;
+          var batteryFallbackH = infoFallbackH;
+          var batteryFallbackX = left + corner + pad * 0.78 + batteryFallbackW / 2;
+          var batteryFallbackInsetNudge = batteryFallbackH * 0.006;
+          this.setRoundedRect(this.batteryBody, batteryFallbackX - batteryFallbackW * 0.04, statusY, batteryFallbackW * 0.92, batteryFallbackH, 0.22);
+          this.batteryBody.setAttribute("position", (batteryFallbackX - batteryFallbackW * 0.04) + " " + statusY + " 0.001");
+          this.setRoundedRect(this.batteryInner, batteryFallbackX - batteryFallbackW * 0.075 + batteryFallbackInsetNudge, statusY - batteryFallbackInsetNudge, batteryFallbackW * 0.68, batteryFallbackH * 0.58, 0.2);
+          this.batteryInner.setAttribute("position", (batteryFallbackX - batteryFallbackW * 0.075 + batteryFallbackInsetNudge) + " " + (statusY - batteryFallbackInsetNudge) + " 0.003");
+          this.setRoundedRect(this.batteryTerminal, batteryFallbackX + batteryFallbackW * 0.43, statusY, batteryFallbackW * 0.08, batteryFallbackH * 0.44, 0.22);
+          this.batteryTerminal.setAttribute("position", (batteryFallbackX + batteryFallbackW * 0.43) + " " + statusY + " 0.0025");
+          for (var fallbackCell = 0; fallbackCell < this.batteryCells.length; fallbackCell++) {
+            var cellW = batteryFallbackW * 0.12;
+            var cellGap = batteryFallbackW * 0.035;
+            var cellStart = batteryFallbackX - batteryFallbackW * 0.32 + cellW / 2;
+            var cellX = cellStart + fallbackCell * (cellW + cellGap);
+            this.setRoundedRect(this.batteryCells[fallbackCell], cellX + batteryFallbackInsetNudge, statusY - batteryFallbackInsetNudge, cellW, batteryFallbackH * 0.36, fallbackCell === 0 || fallbackCell === this.batteryCells.length - 1 ? 0.18 : 0);
+            this.batteryCells[fallbackCell].setAttribute("position", (cellX + batteryFallbackInsetNudge) + " " + (statusY - batteryFallbackInsetNudge) + " 0.004");
+          }
+
+          var infoFallbackX = batteryFallbackX + batteryFallbackW / 2 + fallbackGap + infoFallbackW / 2;
           this.infoBaseX = infoFallbackX;
           this.infoBaseY = statusY;
           this.infoTextBaseX = infoFallbackX;
           this.infoTextBaseY = statusY - liveSize * 0.025;
           this.infoEllipseZ = 0.002;
           this.infoTextZ = 0.004;
+          if (this.infoGlowOuter) {
+            this.infoGlowOuter.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.0008");
+            this.infoGlowOuter.setAttribute("scale", (this.infoScaleX * 1.95) + " " + (this.infoScaleY * 2.12) + " 1");
+          }
           this.infoGlow.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.001");
           this.infoEllipse.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.002");
           this.infoScaleX = infoFallbackW;
@@ -8684,7 +8938,11 @@ triggerReach: function () {
 
           var mapFallbackW = infoFallbackW;
           var mapFallbackH = infoFallbackH;
-          var mapFallbackX = infoFallbackX + infoFallbackW / 2 + liveSize * 0.48 + mapFallbackW / 2;
+          var mapFallbackX = infoFallbackX + infoFallbackW / 2 + fallbackGap + mapFallbackW / 2;
+          if (this.mapGlowOuter) {
+            this.setCapsule(this.mapGlowOuter, mapFallbackX, statusY, mapFallbackW * 1.76, mapFallbackH * 1.92);
+            this.mapGlowOuter.setAttribute("position", mapFallbackX + " " + statusY + " 0.0008");
+          }
           this.setCapsule(this.mapGlow, mapFallbackX, statusY, mapFallbackW * 1.32, mapFallbackH * 1.42);
           this.mapGlow.setAttribute("position", mapFallbackX + " " + statusY + " 0.001");
           this.setCapsule(this.mapShape, mapFallbackX, statusY, mapFallbackW, mapFallbackH);
@@ -8719,6 +8977,7 @@ triggerReach: function () {
         },
         tick: function () {
           this.updateLayout(false);
+          var nowMs = performance.now();
           var nowSecond = Math.floor(Date.now() / 1000);
           if (nowSecond !== this.lastSecond) {
             this.lastSecond = nowSecond;
@@ -8732,7 +8991,6 @@ triggerReach: function () {
             var infoButton = document.getElementById("liveCamInformation");
             var infoPlaying = !!(infoButton && infoButton.classList.contains("is-playing"));
             var infoHovering = !!(infoButton && infoButton.classList.contains("is-hovering"));
-            var nowMs = performance.now();
             if (infoHovering || infoPlaying) {
               this.infoJiggleStart = 0;
               this.nextInfoJiggleAt = nowMs + 3500 + Math.random() * 5600;
@@ -8746,25 +9004,31 @@ triggerReach: function () {
               this.nextInfoJiggleAt = nowMs + 3500 + Math.random() * 5600;
             }
             var wave = active ? Math.sin(jiggleT * Math.PI * 8.2) * (1 - jiggleT * 0.42) : 0;
-            var hoverTarget = infoHovering ? 1 : 0;
-            this.infoHoverAmount += (hoverTarget - (this.infoHoverAmount || 0)) * 0.18;
-            var hover = this.infoHoverAmount || 0;
-            var rot = (1 - hover) * wave * THREE.MathUtils.degToRad(-5.2) + hover * THREE.MathUtils.degToRad(8);
+            var hover = this.cssHoverAmount("info", infoHovering, nowMs);
+            var rot = (1 - hover) * wave * THREE.MathUtils.degToRad(-5.2) + hover * THREE.MathUtils.degToRad(-8);
             var scaleBoost = 1 + hover * 0.32;
-            var glowBoost = 1 + hover * 0.1;
+            var glowBoost = 1;
+            if (this.infoGlowOuter) {
+              this.infoGlowOuter.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.0008");
+              this.infoGlowOuter.setAttribute("visible", false);
+            }
             if (this.infoGlow) {
               this.infoGlow.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.001");
-              this.infoGlow.setAttribute("visible", hover > 0.01);
+              this.infoGlow.setAttribute("visible", false);
             }
             this.infoEllipse.setAttribute("position", this.infoBaseX + " " + this.infoBaseY + " 0.002");
             this.infoText.setAttribute("position", this.infoTextBaseX + " " + this.infoTextBaseY + " 0.004");
             if (this.infoScaleX && this.infoScaleY) {
+              if (this.infoGlowOuter) {
+                this.infoGlowOuter.object3D.scale.set(this.infoScaleX * 1.95 * scaleBoost * glowBoost, this.infoScaleY * 2.12 * scaleBoost * glowBoost, 1);
+              }
               if (this.infoGlow) {
                 this.infoGlow.object3D.scale.set(this.infoScaleX * 1.42 * scaleBoost * glowBoost, this.infoScaleY * 1.55 * scaleBoost * glowBoost, 1);
               }
               this.infoEllipse.object3D.scale.set(this.infoScaleX * scaleBoost, this.infoScaleY * scaleBoost, 1);
             }
             this.infoText.object3D.scale.set(scaleBoost, scaleBoost, 1);
+            if (this.infoGlowOuter) this.infoGlowOuter.object3D.rotation.z = rot;
             if (this.infoGlow) this.infoGlow.object3D.rotation.z = rot;
             this.infoEllipse.object3D.rotation.z = rot;
             this.infoText.object3D.rotation.z = rot;
@@ -8772,15 +9036,26 @@ triggerReach: function () {
           if (this.mapShape && this.mapText && this.mapShape._capsuleBaseScale !== undefined) {
             var mapButton = document.querySelector(".live-cam-map-button");
             var mapHovering = !!(mapButton && mapButton.classList.contains("is-hovering"));
-            var mapHoverTarget = mapHovering ? 1 : 0;
-            this.mapHoverAmount += (mapHoverTarget - (this.mapHoverAmount || 0)) * 0.18;
-            var mapHover = this.mapHoverAmount || 0;
+            var mapHover = this.cssHoverAmount("map", mapHovering, nowMs);
             var mapRot = mapHover * THREE.MathUtils.degToRad(4);
             var mapScaleBoost = 1 + mapHover * 0.32;
-            var mapGlowBoost = 1 + mapHover * 0.1;
+            var mapGlowBoost = 1;
             var mapBaseScale = this.mapShape._capsuleBaseScale;
+            if (this.mapGlowOuter && this.mapGlowOuter._capsuleBaseScale !== undefined) {
+              this.mapGlowOuter.setAttribute("visible", false);
+              this.mapGlowOuter.setAttribute(
+                "position",
+                this.mapGlowOuter._capsuleBaseX + " " + this.mapGlowOuter._capsuleBaseY + " 0.0008"
+              );
+              this.mapGlowOuter.object3D.scale.set(
+                this.mapGlowOuter._capsuleBaseScale * mapScaleBoost * mapGlowBoost,
+                this.mapGlowOuter._capsuleBaseScale * mapScaleBoost * mapGlowBoost,
+                1
+              );
+              this.mapGlowOuter.object3D.rotation.z = mapRot;
+            }
             if (this.mapGlow && this.mapGlow._capsuleBaseScale !== undefined) {
-              this.mapGlow.setAttribute("visible", mapHover > 0.01);
+              this.mapGlow.setAttribute("visible", false);
               this.mapGlow.setAttribute(
                 "position",
                 this.mapGlow._capsuleBaseX + " " + this.mapGlow._capsuleBaseY + " 0.001"
@@ -9115,6 +9390,17 @@ triggerReach: function () {
         <div class="live-cam-corner top-right"></div>
         <div class="live-cam-corner bottom-left"></div>
         <div class="live-cam-corner bottom-right"></div>
+        <div class="live-cam-battery" aria-hidden="true">
+          <div class="live-cam-battery-body">
+            <div class="live-cam-battery-inner">
+              <span class="live-cam-battery-cell"></span>
+              <span class="live-cam-battery-cell"></span>
+              <span class="live-cam-battery-cell"></span>
+              <span class="live-cam-battery-cell"></span>
+            </div>
+          </div>
+          <div class="live-cam-battery-terminal"></div>
+        </div>
         <a class="live-cam-map-button" href="./map.html" target="_blank" rel="noopener" aria-label="Open 2D map">
           <span>MAP</span>
         </a>
@@ -9253,7 +9539,7 @@ triggerReach: function () {
             liveCamMap.classList.remove("is-hovering");
           }, true);
           window.addEventListener("pointerdown", function (event) {
-            if (!(sceneEl && sceneEl.is && sceneEl.is("vr-mode"))) return;
+            if (!shouldUseVrHud()) return;
             if (pointerIsOnMap(event)) openMapPage(event);
           }, true);
         }
@@ -9368,7 +9654,7 @@ triggerReach: function () {
           });
           window.addEventListener("touchend", resetInformationTouchState, true);
           window.addEventListener("pointerdown", function (event) {
-            if (!(sceneEl && sceneEl.is && sceneEl.is("vr-mode"))) return;
+            if (!shouldUseVrHud()) return;
             if (pointerIsOnInformation(event)) {
               if (event.pointerType === "touch") resetInformationTouchState();
               triggerInformationSound(event);
@@ -9376,9 +9662,12 @@ triggerReach: function () {
           }, true);
         }
 
+        function shouldUseVrHud() {
+          return !!(sceneEl && sceneEl.is && sceneEl.is("vr-mode"));
+        }
+
         function syncLiveCamOverlayMode() {
-          var useVrHud =
-            !!(sceneEl && sceneEl.is && sceneEl.is("vr-mode"));
+          var useVrHud = shouldUseVrHud();
           if (liveCamOverlay) liveCamOverlay.style.visibility = useVrHud ? "hidden" : "";
           if (liveCamVrHud) liveCamVrHud.setAttribute("visible", useVrHud ? "true" : "false");
         }
